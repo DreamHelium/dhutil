@@ -151,7 +151,7 @@ static void translation_init()
 {
     if(!translation_inited)
     {
-        bindtextdomain("dhutil", "locale");
+        bindtextdomain(PACKAGE, LOCALEDIR);
         translation_inited = 1;
     }
 }

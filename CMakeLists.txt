@@ -6,6 +6,8 @@ project(dhutil
 
 include(GNUInstallDirs)
 
+set(DHUTIL_VERSION_SO 0)
+
 find_package(PkgConfig)
 
 pkg_search_module(GLIB REQUIRED glib-2.0)
@@ -41,4 +43,10 @@ install(TARGETS "${DHUTIL_LIB}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_FULL_BINDIR}"
     INCLUDES DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}"
+)
+
+set_target_properties("${DHUTIL_LIB}"
+	PROPERTIES
+	SOVERSION "${DHUTIL_VERSION_SO}"
+	VERSION "${PROJECT_VERSION}"
 )

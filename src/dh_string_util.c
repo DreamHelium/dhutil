@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_string_util.h"
-#include "file_util.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -42,6 +42,24 @@ typedef struct internal_impl{
     void (*getline_free)(void*);
     int (*err_print_fn)(const char* str);
 } internal_impl;
+
+struct _dh_limit{
+
+    /* type of the desired type */
+    dh_out_type type;
+    /* range of the desired numbers */
+    void** limit;
+    /* numbers of range */
+    int limit_num;
+    /* Only available for array mode, if = 1 is the same range in all controls */
+    int same_range;
+    /* Only available for array mode, if = 1 shows that it need unlimited numbers */
+    int unlimited_lens;
+    /* Only available for array mode, it's the numbers of needed numbers (if unlimited_lens = 1 it will be ignored) */
+    int lens;
+    /* Only available for array mode, if = 1 check for repeated numbers */
+    int check_repeated;
+};
 
 static int default_getline(char** input, size_t* n)
 {
@@ -93,14 +111,16 @@ static dh_LineOut* inputline_handler_numarray_limit(const char* str, int byte, d
 static void inputline_handler_printerr(int err);
 static void translation_init();
 
-#define DH_NOT_EXPECTED (-1)
-#define DH_ERROR_RANGE  (-2)
-#define DH_ERROR_BYTE_RANGE (-3)
-#define DH_NOT_EXPECTED_AFTER   (-4)
-#define DH_NO_MEMORY    (-5)
-#define DH_REPEATED (-6)
-#define DH_GIVEN_RANGE_ERROR    (-7)
-#define DH_LIMIT_ERROR  (-8)
+#define DH_NOT_EXPECTED       (-1)
+#define DH_ERROR_RANGE        (-2)
+#define DH_ERROR_BYTE_RANGE   (-3)
+#define DH_NOT_EXPECTED_AFTER (-4)
+#define DH_NO_MEMORY          (-5)
+#define DH_REPEATED           (-6)
+#define DH_GIVEN_RANGE_ERROR  (-7)
+#define DH_LIMIT_ERROR        (-8)
+
+#define dh_new(len, type) malloc(len * sizeof(type))
 
 #ifdef DH_USE_TRANSLATION_DEPRECATED
 static char* main_lang = NULL;
@@ -549,7 +569,7 @@ static int multi_char_check_CharArg(const char* str, char* args, char* result, i
                 {
                     if(result) *result = args[i];
                         else return 0;
-                    return 1;
+                    /* return 1; */
                 }
             }
         }
@@ -736,7 +756,29 @@ char *dh_strdup(const char *o_str)
 #endif
 }
 
+char* dh_StrArray_cat(dh_StrArray* arr)
+{
+    int len = 0;
+    if( arr )
+    {
+        /* get length of all strings */
+        for(int i = 0 ; i < arr->num ; i++)
+            len += strlen( (arr->val)[i] );
 
+        char* out = dh_new((len + strlen("")), char);
+
+        if( out )
+        {
+            memset(out,0 ,len + strlen("") );
+            for(int i = 0 ; i < arr->num ; i++)
+                strcpy(out, (arr->val)[i] );
+            return out;
+        }
+        else return NULL;
+
+    }
+    else return NULL;
+}
 
 void dh_LineOut_Free(dh_LineOut *lo)
 {
@@ -1271,8 +1313,13 @@ char* String_TranslateWithErrCode(const char* str, int* err)
 
 int dh_string_getline(char** input, size_t* n, FILE* stream)
 {
-#if ((defined __STDC_ALLOC_LIB__ && __STDC_WANT_LIB_EXT2__ == 1 ) || (_POSIX_C_SOURCE - 0 ) >= 200809L)
-    ssize_t ret =  getline(input, n, stream); // If provide getline, recommend using this.
+    return dh_getdelim(input, n ,'\n' ,stream );
+}
+
+int dh_getdelim(char** input,size_t* n ,int delim , FILE* stream)
+{
+    #if ((defined __STDC_ALLOC_LIB__ && __STDC_WANT_LIB_EXT2__ == 1 ) || (_POSIX_C_SOURCE - 0 ) >= 200809L)
+    ssize_t ret =  getdelim(input, n, delim, stream); // If provide getdelim, recommend using this.
     if(ret != -1)
         return 1;
     else return -1;
@@ -1309,7 +1356,7 @@ int dh_string_getline(char** input, size_t* n, FILE* stream)
             }
             (*input)[char_num] = read_char; // write the num in
             char_num++;
-            if(read_char == '\n')
+            if(read_char == delim)
                 break; // Read finish
         }
         if(read_char != EOF)
@@ -1477,5 +1524,15 @@ int dh_limit_SetArrayArgs(dh_limit* limit ,int lens, int same_range, int check_r
         return 1;
     }
     else return 0;
+}
+
+int dh_default_TitlePrinter(const char* title)
+{
+    return global_impl.printf_fn("%s\n", title);
+}
+
+int dh_default_OptionPrinter(int opt, const char* opt_name)
+{
+    return global_impl.printf_fn("[%2d] %s", opt, opt_name);
 }
 

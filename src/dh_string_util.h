@@ -82,23 +82,14 @@ typedef struct dh_string_impl{
     int (*err_print_fn)(const char*);
 } dh_string_impl;
 
-typedef struct dh_limit{
+typedef struct _dh_limit dh_limit ;
+typedef int (*DhTitlePrinter)(const char* title);
+typedef int (*DhOptionPrinter)(int opt, const char* opt_name);
+typedef int (*DhNumberSelector)(int);
 
-    /* type of the desired type */
-    dh_out_type type;
-    /* range of the desired numbers */
-    void** limit;
-    /* numbers of range */
-    int limit_num;
-    /* Only available for array mode, if = 1 is the same range in all controls */
-    int same_range;
-    /* Only available for array mode, if = 1 shows that it need unlimited numbers */
-    int unlimited_lens;
-    /* Only available for array mode, it's the numbers of needed numbers (if unlimited_lens = 1 it will be ignored) */
-    int lens;
-    /* Only available for array mode, if = 1 check for repeated numbers */
-    int check_repeated;
-} dh_limit;
+int dh_default_TitlePrinter(const char* title);
+int dh_default_OptionPrinter(int opt, const char* opt_name);
+
 
 /** Change implement of this string util, might be needed if using in GUI lib or other cases */
 void dh_string_ChangeImpl(dh_string_impl* impl);
@@ -131,7 +122,7 @@ char* String_Translate(const char* str);
 /** @brief Return Translation and also the err code \n
   *        err -1: no translation file \n
   *        err -2: no corresponding translation
-  *        @return Translation
+  * @return Translation
   */
 char* String_TranslateWithErrCode(const char* str, int* err);
 void String_Translate_printfRaw(const char* str);
@@ -140,6 +131,7 @@ void String_Translate_FreeLocale();
 #endif
 
 char* dh_strdup(const char *o_str);
+char* dh_StrArray_cat(dh_StrArray* arr);
 
 dh_StrArray* dh_StrArray_Init(const char* str);
 
@@ -149,6 +141,8 @@ void dh_StrArray_Free(dh_StrArray* arr);
 
 /** Use getline() if provided, otherwise use another implement */
 int dh_string_getline(char** input, size_t* n, FILE* stream);
+
+int dh_getdelim(char** input, size_t* n,int delim, FILE* stream);
 
 /** Initize a limit type
  *  WARNING: Recommend that don't edit struct directly */

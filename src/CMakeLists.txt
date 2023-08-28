@@ -8,8 +8,8 @@ add_definitions (
   -DLOCALEDIR="${INSTALL_PREFIX}/share/locale"
 )
 
-file(GLOB HEADERS dh_string_util.h  file_util.h  list_util.h)
-set(SOURCES dh_string_util.c  file_util.c  list_util.c)
+file(GLOB HEADERS dh_string_util.h  file_util.h  list_util.h dh_data_ooc.h)
+set(SOURCES dh_string_util.c  file_util.c  list_util.c dh_data_ooc.c)
 
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")
 

@@ -268,7 +268,7 @@ static dh_LineOut* inputline_handler_numarray_limit(const char* str, int byte , 
     }
 }
 
-dh_LineOut * InputLine_General(int byte, dh_limit* limit, int get_string, char* args, int allow_empty)
+dh_LineOut * InputLine_General(int byte, dh_limit* limit, int get_string, const char* args, int allow_empty)
 {
 #ifndef DH_DISABLE_TRANSLATION
     translation_init();
@@ -799,10 +799,11 @@ dh_StrArray *dh_StrArray_Init(const char *str)
     if(arr)
     {
         arr->num = 1;
-        arr->val = malloc( sizeof(char*) );
+        arr->val = malloc(2 * sizeof(char*) );
         if(arr->val)
         {
             arr->val[0] = dh_strdup(str);
+            arr->val[1] = NULL;
             return arr;
         }
         else
@@ -829,11 +830,12 @@ int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
     else
     {
         dh_StrArray* o_arr = *arr;
-        char** p_arr = realloc(o_arr->val, (o_arr->num + 1) * sizeof(char*));
+        char** p_arr = realloc(o_arr->val, (o_arr->num + 2) * sizeof(char*));
         if(p_arr)
         {
             o_arr->val = p_arr;
             o_arr->val[o_arr->num] = dh_strdup(str);
+            o_arr->val[(o_arr->num) + 1] = NULL;
             o_arr->num = o_arr->num + 1;
             return 0;
         }
@@ -850,7 +852,7 @@ void dh_StrArray_Free(dh_StrArray *arr)
 {
     if(arr)
     {
-        for(int i = 0; i < arr->num; i++)
+        for(int i = 0; i < ((arr->num) + 1); i++)
             free(arr->val[i]);
         free(arr->val);
         free(arr);
@@ -1533,6 +1535,46 @@ int dh_default_TitlePrinter(const char* title)
 
 int dh_default_OptionPrinter(int opt, const char* opt_name)
 {
-    return global_impl.printf_fn("[%2d] %s", opt, opt_name);
+    return global_impl.printf_fn("[%2d] %s\n", opt, opt_name);
 }
 
+int dh_default_selector(const char* tip, int opt, const char* opt_name)
+{
+    global_impl.printf_fn(tip);
+
+    dh_limit* limit = dh_limit_Init(Integer);
+    dh_limit_AddInt(limit, 0, opt);
+    dh_LineOut* out = InputLine_General(8, limit, 0, opt_name, 1);
+    dh_limit_Free(limit);
+    if(out->type == Integer)
+    {
+        int ret = out->num_i;
+        dh_LineOut_Free(out);
+        return ret;
+    }
+    else if(out->type == Empty)
+    {
+        dh_LineOut_Free(out);
+        return -1;
+    }
+    else if(out->type == Character)
+    {
+        const char* opt_name_d = opt_name;
+        int i = 0;
+        /*  "sqrt"
+         *   0123
+         *  -1/-2/-3/-4
+         **/
+        while( *opt_name_d != out->val_c)
+        {
+            opt_name_d++;
+            i++;
+        }
+        return -i-1;
+    }
+    else
+    {
+        dh_LineOut_Free(out);
+        return -100;
+    }
+}

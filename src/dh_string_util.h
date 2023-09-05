@@ -85,11 +85,11 @@ typedef struct dh_string_impl{
 typedef struct _dh_limit dh_limit ;
 typedef int (*DhTitlePrinter)(const char* title);
 typedef int (*DhOptionPrinter)(int opt, const char* opt_name);
-typedef int (*DhNumberSelector)(int);
+typedef int (*DhNumberSelector)(const char* ,int);
 
 int dh_default_TitlePrinter(const char* title);
 int dh_default_OptionPrinter(int opt, const char* opt_name);
-
+int dh_default_selector(const char* tip, int opt, const char* opt_name);
 
 /** Change implement of this string util, might be needed if using in GUI lib or other cases */
 void dh_string_ChangeImpl(dh_string_impl* impl);
@@ -102,7 +102,7 @@ dh_LineOut* InputLine_Get_OneOpt_WithByte(int byte, int range_check, int need_nu
 dh_LineOut* InputLine_Get_MoreDigits(int range_check, int need_nums, int arg_num, ...);
 dh_LineOut* InputLine_Get_MoreDigits_WithByte(int byte, int range_check, int need_nums, int arg_num, ...);
 /** A better way to get output, byte will be ignored in Float/Double(or array) mode */
-dh_LineOut* InputLine_General(int byte, dh_limit* limit, int get_string, char* args, int allow_empty);
+dh_LineOut* InputLine_General(int byte, dh_limit* limit, int get_string, const char* args, int allow_empty);
 /** Transform a String to number array */
 long* NumArray_From_String(const char* string, int* nums, int char_check);
 

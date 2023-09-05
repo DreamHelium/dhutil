@@ -6,4 +6,4 @@ Version: @PROJECT_VERSION@
 Description: utilitity for Dream Helium's program
 URL: https://github.com/DreamHelium/dhutil
 Libs: -L${libdir} -ldhutil
-Cflags: -I${includedir} -I${includedir}/dhelium
+Cflags: -I${includedir} -I${includedir}/dh

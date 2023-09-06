@@ -25,6 +25,7 @@ extern "C"{
 #include <gmodule.h>
 
 GList* dh_search_in_list(GList* list, const char* name);
+GList* dh_search_in_list_custom(GList* list, gconstpointer data, GCompareFunc func);
 
 #ifdef __cplusplus
 }

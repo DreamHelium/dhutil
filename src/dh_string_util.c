@@ -80,7 +80,7 @@ static internal_impl global_impl = { internal_printf, vprintf, default_getline, 
 static dh_LineOut* InputLine_Get_OneOpt_va(int byte, int range_check, int need_num, int arg_num, va_list va);
 static dh_LineOut* InputLine_Get_MoreDigits_va ( int byte, int range_check, int need_nums, int arg_num, va_list va, int same_range );
 static int char_check(const char* str, char** end, char check_char, int case_sensitive);
-static int multi_char_check_CharArg(const char* str, char* args, char* result, int* err);
+static int multi_char_check_CharArg(const char* str, const char* args, char* result, int* err);
 static int search_num(int byte, const char* str, char** end, int rc, int64_t min, int64_t max, int64_t *result, int* err);
 static int64_t* line_numarray_check(int byte, int* array_len, const char* str, int need_nums, int range_nums,
                                     int64_t** range, int* err, int repeat_check, int same_range,
@@ -100,7 +100,7 @@ static void* resize_array(int byte, int o_byte, void* array, int len);
 static dh_LineOut* inputline_handler_nummode_noVa(const char* str, int byte, int range_check, int* err, int min, int max);
 
 /** Character mode (normal) */
-static dh_LineOut* inputline_handler_charmode_CharArg(const char* str, char* args, int* err);
+static dh_LineOut* inputline_handler_charmode_CharArg(const char* str, const char* args, int* err);
 /** Integer Array mode (normal) */
 static dh_LineOut* inputline_handler_numarray(const char* str, int byte, int need_nums,
                                               int range_nums, int64_t** range, int* err, int repeat_check, int same_range,
@@ -230,7 +230,7 @@ static dh_LineOut* inputline_handler_nummode_noVa(const char* str, int byte, int
 }
 
 static
-dh_LineOut* inputline_handler_charmode_CharArg(const char* str, char* args, int* err)
+dh_LineOut* inputline_handler_charmode_CharArg(const char* str, const char* args, int* err)
 {
     char out;
     if(multi_char_check_CharArg(str, args, &out, err))
@@ -550,7 +550,7 @@ static int char_check(const char* str, char** end, char check_char, int case_sen
     else return 0;
 }
 
-static int multi_char_check_CharArg(const char* str, char* args, char* result, int* err)
+static int multi_char_check_CharArg(const char* str, const char* args, char* result, int* err)
 {
     if(args)
     {
@@ -568,8 +568,8 @@ static int multi_char_check_CharArg(const char* str, char* args, char* result, i
                 else
                 {
                     if(result) *result = args[i];
-                        else return 0;
-                    /* return 1; */
+                    else return 0;
+                    return 1;
                 }
             }
         }
@@ -846,6 +846,18 @@ int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
             return -1;
         }
     }
+}
+
+gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str)
+{
+    if(arr){
+        for(int i = 0 ; i < arr->num; i++)
+        {
+            if(g_str_equal((arr->val)[i], str))
+                return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 void dh_StrArray_Free(dh_StrArray *arr)

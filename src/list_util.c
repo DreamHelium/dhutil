@@ -47,3 +47,26 @@ GList *dh_search_in_list(GList *list, const char *name)
         return ret;
     }
 }
+
+GList* dh_search_in_list_custom(GList* list, gconstpointer data, GCompareFunc func)
+{
+    GList* ret = NULL;
+    if(list == NULL)
+        return NULL;
+    else
+    {
+        while(list)
+        {
+            /* Find the first corresponding item */
+            list = g_list_find_custom(list, data, func);
+            if(list)
+            {
+                ret = g_list_append(ret, list->data);
+                /* Force update */
+                list = list->next;
+            }
+            /* Else there's no corresponding item, finish */
+        }
+        return ret;
+    }
+}

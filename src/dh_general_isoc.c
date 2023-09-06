@@ -20,10 +20,14 @@
 #include "dh_string_util.h"
 #include <stdio.h>
 
-struct _DhGeneralIsoc
+static void dh_general_isoc_interface_init(DhGeneralInterface* iface);
+
+struct _DhIsoc
 {
     GObject parent_instance;
 };
+
+G_DEFINE_FINAL_TYPE_WITH_CODE(DhIsoc, dh_isoc, G_TYPE_OBJECT, G_IMPLEMENT_INTERFACE(DH_TYPE_GENERAL, dh_general_isoc_interface_init))
 
 static int dh_vprintf(DhGeneral* self, const char* str, va_list va)
 {
@@ -47,17 +51,16 @@ static void dh_general_isoc_interface_init(DhGeneralInterface* iface)
     iface->selector = selector;
 }
 
-G_DEFINE_FINAL_TYPE_WITH_CODE(DhGeneralIsoc, dh_general_isoc, DH_TYPE_GENERAL_ISOC, G_IMPLEMENT_INTERFACE(DH_TYPE_GENERAL, dh_general_isoc_interface_init))
-
-static void dh_general_isoc_init(DhGeneralIsoc* self)
+static void dh_isoc_init(DhIsoc* self)
 {
 }
 
-static void dh_general_isoc_class_init(DhGeneralIsocClass* klass)
+static void dh_isoc_class_init(DhIsocClass* klass)
 {
 }
 
-DhGeneralIsoc* dh_general_isoc_new()
+DhIsoc* dh_general_isoc_new()
 {
-    return g_object_new(DH_TYPE_GENERAL_ISOC, NULL);
+    DhIsoc* isoc = g_object_new(DH_TYPE_ISOC, NULL);
+    return isoc;
 }

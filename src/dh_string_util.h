@@ -25,6 +25,7 @@ extern "C"{
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <glib.h>
 
 /** The type of the dh_Line_IO */
 typedef enum dh_out_type{
@@ -136,6 +137,8 @@ char* dh_StrArray_cat(dh_StrArray* arr);
 dh_StrArray* dh_StrArray_Init(const char* str);
 
 int dh_StrArray_AddStr(dh_StrArray** arr ,const char* str);
+
+gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str);
 
 void dh_StrArray_Free(dh_StrArray* arr);
 

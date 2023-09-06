@@ -22,10 +22,10 @@
 
 G_BEGIN_DECLS
 
-#define DH_TYPE_GENERAL_ISOC dh_general_isoc_get_type()
-G_DECLARE_FINAL_TYPE (DhGeneralIsoc, dh_general_isoc, DH, GENERAL_ISOC, GObject)
+#define DH_TYPE_ISOC dh_isoc_get_type()
+G_DECLARE_FINAL_TYPE (DhIsoc, dh_isoc, DH, ISOC, GObject)
 
-DhGeneralIsoc* dh_general_isoc_new();
+DhIsoc* dh_general_isoc_new();
 
 G_END_DECLS
 

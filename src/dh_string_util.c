@@ -766,12 +766,19 @@ char* dh_StrArray_cat(dh_StrArray* arr)
             len += strlen( (arr->val)[i] );
 
         char* out = dh_new((len + strlen("")), char);
+        char* out_d = out;
 
         if( out )
         {
             memset(out,0 ,len + strlen("") );
             for(int i = 0 ; i < arr->num ; i++)
-                strcpy(out, (arr->val)[i] );
+            {
+                strcpy(out_d, (arr->val)[i] );
+                while(*out_d)
+                {
+                    out_d++;
+                }
+            }
             return out;
         }
         else return NULL;

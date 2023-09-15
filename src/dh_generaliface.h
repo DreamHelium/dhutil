@@ -29,6 +29,7 @@ G_DECLARE_INTERFACE (DhGeneral, dh_general, DH, GENERAL, GObject)
 struct _DhGeneralInterface{
     GTypeInterface parent;
 
+    void (*new_win)(DhGeneral* self, gboolean need_new_win_in_cmd);
     int (*v_printer)(DhGeneral* self, const char* str, va_list va);
     int (*option_printer)(DhGeneral* self, int opt, const char* str);
     int (*selector)(DhGeneral* self, const char* tip, int opt, const char* opt_name, va_list va);
@@ -38,6 +39,7 @@ struct _DhGeneralInterface{
 int dh_printf(DhGeneral* self, const char* str, ...);
 int dh_option_printer(DhGeneral* self, int opt, const char* str);
 int dh_selector(DhGeneral* self, const char* tip, int opt, const char* opt_name, ...);
+void dh_new_win(DhGeneral* self, gboolean need_new_win_in_cmd);
 
 G_END_DECLS
 

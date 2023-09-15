@@ -25,6 +25,7 @@ static void dh_general_default_init(DhGeneralInterface* iface)
     iface->v_printer = NULL;
     iface->option_printer = NULL;
     iface->selector = NULL;
+    iface->new_win = NULL;
 }
 
 int dh_printf(DhGeneral* self, const char* str, ...)
@@ -67,4 +68,15 @@ int dh_selector(DhGeneral* self, const char* tip, int opt, const char* opt_name,
     int ret = iface->selector(self, tip, opt, opt_name, va);
     va_end(va);
     return ret;
+}
+
+void dh_new_win(DhGeneral* self, gboolean need_new_win_in_cmd)
+{
+    DhGeneralInterface* iface;
+
+    g_return_if_fail(DH_IS_GENERAL(self));
+
+    iface = DH_GENERAL_GET_IFACE(self);
+    g_return_if_fail(iface->new_win != NULL);
+    iface->new_win(self, need_new_win_in_cmd);
 }

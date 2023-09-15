@@ -19,6 +19,7 @@
 #include "dh_generaliface.h"
 #include "dh_string_util.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 static void dh_general_isoc_interface_init(DhGeneralInterface* iface);
 
@@ -44,11 +45,24 @@ static int selector(DhGeneral* self, const char* tip, int opt, const char* opt_n
     return dh_default_selector(tip, opt, opt_name);
 }
 
+static void new_win(DhGeneral* self, gboolean need_nw_cmd)
+{
+    if(need_nw_cmd)
+    {
+#ifdef G_OS_WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
+    }
+}
+
 static void dh_general_isoc_interface_init(DhGeneralInterface* iface)
 {
     iface->v_printer = dh_vprintf;
     iface->option_printer = option_printer;
     iface->selector = selector;
+    iface->new_win = new_win;
 }
 
 static void dh_isoc_init(DhIsoc* self)

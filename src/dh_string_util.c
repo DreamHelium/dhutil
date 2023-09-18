@@ -89,6 +89,15 @@ static int range_check(int64_t num, int byte);
 static int float_check(double num);
 static void* resize_array(int byte, int o_byte, void* array, int len);
 
+#define DH_NOT_EXPECTED       (-1)
+#define DH_ERROR_RANGE        (-2)
+#define DH_ERROR_BYTE_RANGE   (-3)
+#define DH_NOT_EXPECTED_AFTER (-4)
+#define DH_NO_MEMORY          (-5)
+#define DH_REPEATED           (-6)
+#define DH_GIVEN_RANGE_ERROR  (-7)
+#define DH_LIMIT_ERROR        (-8)
+
 // err in the case:
 // -1 : Not expected character
 // -2 : Out of range (min and max)
@@ -111,23 +120,10 @@ static dh_LineOut* inputline_handler_numarray_limit(const char* str, int byte, d
 static void inputline_handler_printerr(int err);
 static void translation_init();
 
-#define DH_NOT_EXPECTED       (-1)
-#define DH_ERROR_RANGE        (-2)
-#define DH_ERROR_BYTE_RANGE   (-3)
-#define DH_NOT_EXPECTED_AFTER (-4)
-#define DH_NO_MEMORY          (-5)
-#define DH_REPEATED           (-6)
-#define DH_GIVEN_RANGE_ERROR  (-7)
-#define DH_LIMIT_ERROR        (-8)
+
 
 #define dh_new(len, type) malloc(len * sizeof(type))
 
-#ifdef DH_USE_TRANSLATION_DEPRECATED
-static char* main_lang = NULL;
-static char* secondary_lang = NULL;
-static char* get_locale();
-static char* translation_pos();
-#endif
 
 static int translation_inited = 0;
 
@@ -787,6 +783,28 @@ char* dh_StrArray_cat(dh_StrArray* arr)
     else return NULL;
 }
 
+static guint find_char(const char* str, char key)
+{
+    guint i = 0;
+    while(*str)
+    {
+        if(*str == key)
+            i++;
+        str++;
+    }
+    return i;
+}
+
+guint dh_StrArray_FindChar(dh_StrArray* arr, char key)
+{
+    guint char_num = 0;
+    for(int i = 0 ; i < arr->num ; i++)
+    {
+        char_num += find_char(arr->val[i], key);
+    }
+    return char_num;
+}
+
 void dh_LineOut_Free(dh_LineOut *lo)
 {
     switch(lo->type){
@@ -1181,156 +1199,6 @@ dh_LineOut *InputLine_Get_MoreDigits_WithByte(int byte, int range_check, int nee
     va_end(va);
     return out;
 }
-
-#ifdef DH_USE_TRANSLATION_DEPRECATED
-
-void String_Translate_FreeLocale()
-{
-    free(main_lang);
-    main_lang = NULL;
-    free(secondary_lang);
-    secondary_lang = NULL;
-}
-
-static char* translation_pos()
-{
-    char* lang = get_locale();
-    char* dir = dhlrc_ConfigContent("langDir");
-    if(!dir || !strcmp(dir,""))
-    {
-        free(dir);
-        dir = String_Copy("lang/");
-    }
-    int len = strlen(dir) + strlen("/") + strlen(lang) + strlen(".json") + sizeof ("");
-    char* filepos = (char*)malloc( len * sizeof(char) );
-    // dir + / + lang + .json ( "lang/" "/" "en_US" ".json" )
-    filepos[0] = 0;
-    strcat( filepos, dir);
-    strcat( filepos, "/");
-    strcat( filepos, lang );
-    strcat( filepos, ".json");
-    free(dir);
-    return filepos;
-}
-
-
-void String_Translate_printfRaw(const char *str)
-{
-    char* trans = String_Translate(str);
-    global_impl.printf_fn("%s",trans);
-    free(trans);
-}
-
-void String_Translate_printfWithArgs(const char *str, ...)
-{
-    int err = 0;
-    char* trans = String_TranslateWithErrCode(str, &err);
-    va_list va;
-    va_start(va,str);
-    if(err == 0)
-        global_impl.vprintf_fn(trans, va);
-    else global_impl.printf_fn("%s", trans);
-    va_end(va);
-    free(trans);
-}
-
-static char* get_locale()
-{
-    if(!main_lang)
-    {
-        char* override_lang = dhlrc_ConfigContent("OverrideLang");
-        if(override_lang == NULL || !strcmp(override_lang,""))
-        {
-            free(override_lang);
-#if defined LC_MESSAGES
-            /* POSIX defined LC_MESSAGES, so when using standard C this is also available */
-            char* lang = setlocale(LC_MESSAGES, NULL);
-#else
-            /* Tested in Windows, the language variable is not the same as POSIX, but just leave this to make it run (hopefully) */
-            char* lang = setlocale(LC_ALL, NULL);
-#endif
-            char* lang_copy = lang;
-            if(lang_copy){ /* In case the return value is NULL */
-            int point_pos = 0;
-            while(*lang_copy != '.' && *lang_copy != '\0' && *lang_copy != '@')
-            {
-                // For example "zh_CN.UTF-8", when it's "." , pos will be 5, so it's lang[5] = '.'.
-                lang_copy++;
-                point_pos++;
-            }
-            char* ret = (char*)malloc((point_pos + sizeof("")) * sizeof(char));
-            for(int i = 0 ; i < point_pos; i++)
-                ret[i] = lang[i];
-            ret[point_pos] = '\0';
-            main_lang = String_Copy(ret);
-            free(ret);
-            }
-            else{
-                fprintf(stderr, "Not a valid language variable, will fallback to en_US.\n");
-                main_lang = String_Copy("en_US");
-            }
-        }
-        else
-        {
-            main_lang = String_Copy(override_lang);
-            free(override_lang);
-        }
-        /* Determine translation file exists or fallback to en_US
-         * But translation_pos need language variable, so main_lang shouldn't be null */
-        char* filepos = translation_pos();
-        cJSON* trans_json = dhlrc_FileToJSON(filepos);
-        free(filepos);
-        if(trans_json)
-        {
-            cJSON_Delete(trans_json);
-            return main_lang;
-        }
-        else
-        {
-            free(main_lang);
-            main_lang = String_Copy("en_US");
-            return main_lang;
-        }
-    }
-    else return main_lang;
-}
-
-
-char* String_Translate(const char* str)
-{
-    return String_TranslateWithErrCode(str, NULL);
-}
-
-char* String_TranslateWithErrCode(const char* str, int* err)
-{
-    char* filepos = translation_pos();
-    cJSON* trans_json = dhlrc_FileToJSON(filepos);
-    free(filepos);
-    if(trans_json)
-    {
-        cJSON* trans_item =cJSON_GetObjectItem(trans_json, str);
-        if(cJSON_IsString(trans_item))
-        {
-            char* trans = cJSON_GetStringValue(trans_item);
-            char* output = String_Copy(trans);
-            cJSON_Delete(trans_json);
-            if(err) *err = 0;
-            return output;
-        }
-        else{
-            if(err) *err = -2; // no corresponding translate
-            cJSON_Delete(trans_json);
-            return String_Copy(str);
-        }
-
-    }
-    else {
-        if(err) *err = -1; // no translation file
-        return String_Copy(str);
-    }
-}
-
-#endif
 
 int dh_string_getline(char** input, size_t* n, FILE* stream)
 {

@@ -43,7 +43,7 @@ int dh_printf(DhGeneral* self, const char* str, ...)
     return ret;
 }
 
-int dh_option_printer(DhGeneral* self, int opt, const char* str)
+int dh_option_printer(DhGeneral* self, int opt, const char* str, ...)
 {
     DhGeneralInterface* iface;
 
@@ -51,7 +51,11 @@ int dh_option_printer(DhGeneral* self, int opt, const char* str)
 
     iface = DH_GENERAL_GET_IFACE(self);
     g_return_val_if_fail(iface->option_printer != NULL, -1);
-    return iface->option_printer(self, opt, str);
+    va_list va;
+    va_start(va, str);
+    int ret = iface->option_printer(self, opt, str, va);
+    va_end(va);
+    return ret;
 }
 
 

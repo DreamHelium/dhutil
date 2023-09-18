@@ -117,20 +117,6 @@ dh_LineOut* dh_LineOut_CreateEmpty();
 
 void dh_LineOut_Free(dh_LineOut* lo);
 
-#ifdef DH_USE_TRANSLATION_DEPRECATED
-/* I'm porting this project to gettext, so these functions are of no use. */
-char* String_Translate(const char* str);
-/** @brief Return Translation and also the err code \n
-  *        err -1: no translation file \n
-  *        err -2: no corresponding translation
-  * @return Translation
-  */
-char* String_TranslateWithErrCode(const char* str, int* err);
-void String_Translate_printfRaw(const char* str);
-void String_Translate_printfWithArgs(const char* str, ...);
-void String_Translate_FreeLocale();
-#endif
-
 char* dh_strdup(const char *o_str);
 char* dh_StrArray_cat(dh_StrArray* arr);
 
@@ -139,6 +125,7 @@ dh_StrArray* dh_StrArray_Init(const char* str);
 int dh_StrArray_AddStr(dh_StrArray** arr ,const char* str);
 
 gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str);
+guint dh_StrArray_FindChar(dh_StrArray* arr, char key);
 
 void dh_StrArray_Free(dh_StrArray* arr);
 

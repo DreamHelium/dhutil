@@ -35,9 +35,12 @@ static int dh_vprintf(DhGeneral* self, const char* str, va_list va)
     return vprintf(str, va);
 }
 
-static int option_printer(DhGeneral* self, int opt, const char* str)
+static int option_printer(DhGeneral* self, int opt, const char* str, va_list va)
 {
-    return dh_default_OptionPrinter(opt, str);
+    int ret = 0;
+    ret += printf("[%2d] ", opt);
+    ret += vprintf(str, va);
+    return ret;
 }
 
 static int selector(DhGeneral* self, const char* tip, int opt, const char* opt_name, va_list va)

@@ -25,6 +25,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/libdhutil.pc.in"
 message("${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 message("${CMAKE_LIBRARY_PATH}")
 
+add_executable(example example.c)
+
+target_link_libraries(example dhutil)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
 install(TARGETS "${DHUTIL_LIB}"

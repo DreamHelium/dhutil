@@ -40,6 +40,7 @@ static int option_printer(DhGeneral* self, int opt, const char* str, va_list va)
     int ret = 0;
     ret += printf("[%2d] ", opt);
     ret += vprintf(str, va);
+    ret += printf("\n");
     return ret;
 }
 

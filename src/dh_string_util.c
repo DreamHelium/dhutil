@@ -1430,7 +1430,7 @@ int dh_default_selector(const char* tip, int opt, const char* opt_name)
     global_impl.printf_fn(tip);
 
     dh_limit* limit = dh_limit_Init(Integer);
-    dh_limit_AddInt(limit, 0, opt);
+    dh_limit_AddInt(limit, 0, opt - 1);
     dh_LineOut* out = InputLine_General(8, limit, 0, opt_name, 1);
     dh_limit_Free(limit);
     if(out->type == Integer)

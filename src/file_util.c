@@ -142,7 +142,9 @@ GList* dh_FileList_Create(const char* pos)
     GFile* dir = g_file_new_for_path(pos);
     GError* err = NULL;
 
-    GFileEnumerator* gfe = g_file_enumerate_children(dir, NULL, G_FILE_QUERY_INFO_NONE, NULL, &err);
+    /* To use in Windows, we need attribute
+     * But why don't we need in Linux? */
+    GFileEnumerator* gfe = g_file_enumerate_children(dir, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &err);
     if(gfe == NULL)
     {
         g_object_unref(dir);

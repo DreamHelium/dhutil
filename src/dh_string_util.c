@@ -398,13 +398,15 @@ static dh_LineOut *InputLine_Get_OneOpt_va(int byte, int range_check, int need_n
         va_end(va_char);
         return NULL;
     }
-    char str_arg[arg_num + 1];
+    /* MSVC doesn't support VLA */
+    char* str_arg = dh_new(arg_num + 1, char);
     for(int i = 0 ; i < arg_num ; i++)
         str_arg[i] = (char)va_arg(va_char, int);
     str_arg[arg_num] = 0;
     va_end(va_char);
     dh_LineOut* dout = InputLine_General( byte, limit, 0, str_arg, 1);
     dh_limit_Free(limit);
+    free(str_arg);
     return dout;
 }
 

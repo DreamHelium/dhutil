@@ -120,10 +120,7 @@ static dh_LineOut* inputline_handler_numarray_limit(const char* str, int byte, d
 static void inputline_handler_printerr(int err);
 static void translation_init();
 
-
-
 #define dh_new(len, type) malloc(len * sizeof(type))
-
 
 static int translation_inited = 0;
 
@@ -817,29 +814,17 @@ void dh_LineOut_Free(dh_LineOut *lo)
         break;
     default: break;
     }
-    free(lo);
+    g_free(lo);
 }
 
 dh_StrArray *dh_StrArray_Init(const char *str)
 {
-    dh_StrArray* arr = malloc(sizeof(dh_StrArray));
-    if(arr)
-    {
-        arr->num = 1;
-        arr->val = malloc(2 * sizeof(char*) );
-        if(arr->val)
-        {
-            arr->val[0] = dh_strdup(str);
-            arr->val[1] = NULL;
-            return arr;
-        }
-        else
-        {
-            free(arr);
-            return NULL;
-        }
-    }
-    else return NULL;
+    dh_StrArray* arr = g_new(dh_StrArray, 1);
+    arr->num = 1;
+    arr->val = g_new(char*, 2);
+    arr->val[0] = g_strdup(str);
+    arr->val[1] = NULL;
+    return arr;
 }
 
 int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
@@ -847,31 +832,18 @@ int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
     if(*arr == NULL)
     {
         dh_StrArray* arr_init = dh_StrArray_Init(str);
-        if(arr_init)
-        {
-            *arr = arr_init;
-            return 0;
-        }
-        else return -1;
+        *arr = arr_init;
+        return 0;
     }
     else
     {
         dh_StrArray* o_arr = *arr;
-        char** p_arr = realloc(o_arr->val, (o_arr->num + 2) * sizeof(char*));
-        if(p_arr)
-        {
-            o_arr->val = p_arr;
-            o_arr->val[o_arr->num] = dh_strdup(str);
-            o_arr->val[(o_arr->num) + 1] = NULL;
-            o_arr->num = o_arr->num + 1;
-            return 0;
-        }
-        else
-        {
-            dh_StrArray_Free(o_arr);
-            *arr = NULL;
-            return -1;
-        }
+        char** p_arr = g_renew(char*, o_arr->val, o_arr->num + 2);
+        o_arr->val = p_arr;
+        o_arr->val[o_arr->num] = g_strdup(str);
+        o_arr->val[(o_arr->num) + 1] = NULL;
+        o_arr->num = o_arr->num + 1;
+        return 0;
     }
 }
 
@@ -892,13 +864,11 @@ void dh_StrArray_Free(dh_StrArray *arr)
     if(arr)
     {
         for(int i = 0; i < ((arr->num) + 1); i++)
-            free(arr->val[i]);
-        free(arr->val);
-        free(arr);
+            g_free(arr->val[i]);
+        g_free(arr->val);
+        g_free(arr);
     }
 }
-
-
 
 static int range_check(int64_t num, int byte)
 {
@@ -927,23 +897,19 @@ static int range_check(int64_t num, int byte)
 
 dh_LineOut *dh_LineOut_CreateNum(int64_t num, int byte)
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    if(range_check(num, byte))
     {
-        if(range_check(num, byte))
-        {
-            out->byte = byte;
-            out->num_i = num;
-            out->type = Integer;
-            return out;
-        }
-        else
-        {
-            free(out);
-            return NULL;
-        }
+        out->byte = byte;
+        out->num_i = num;
+        out->type = Integer;
+        return out;
     }
-    else return NULL;
+    else
+    {
+        free(out);
+        return NULL;
+    }
 }
 
 static int float_check(double num)
@@ -955,49 +921,37 @@ static int float_check(double num)
 
 dh_LineOut *dh_LineOut_CreateFloat(double num)
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    if(float_check(num))
     {
-        if(float_check(num))
-        {
-            out->byte = 4; // 32/8 = 4, float
-            out->num_f = num;
-            out->type = Float;
-            return out;
-        }
-        else
-        {
-            free(out);
-            return NULL;
-        }
+        out->byte = 4; // 32/8 = 4, float
+        out->num_f = num;
+        out->type = Float;
+        return out;
     }
-    else return NULL;
+    else
+    {
+        free(out);
+        return NULL;
+    }
 }
 
 dh_LineOut* dh_LineOut_CreateDouble(double num)
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
-    {
-        out->byte = 8;
-        out->num_f = num;
-        out->type = Double;
-        return out;
-    }
-    else return NULL;
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    out->byte = 8;
+    out->num_f = num;
+    out->type = Double;
+    return out;
 }
 
 dh_LineOut *dh_LineOut_CreateChar(char c)
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
-    {
-        out->byte = 1;
-        out->val_c = c;
-        out->type = Character;
-        return out;
-    }
-    else return NULL;
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    out->byte = 1;
+    out->val_c = c;
+    out->type = Character;
+    return out;
 }
 
 dh_LineOut *dh_LineOut_CreateNumArray(void *array, int len, int byte, int o_byte)
@@ -1005,25 +959,21 @@ dh_LineOut *dh_LineOut_CreateNumArray(void *array, int len, int byte, int o_byte
     if((byte == 1 || byte == 2 || byte == 4 || byte == 8)
             && (o_byte == 1 || o_byte == 2 || o_byte == 4 || o_byte == 8))
     {
-        dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-        if(out)
+        dh_LineOut* out = g_new(dh_LineOut, 1);
+        void* new_array = resize_array(byte, o_byte, array, len);
+        if(new_array)
         {
-            void* new_array = resize_array(byte, o_byte, array, len);
-            if(new_array)
-            {
-                out->val = new_array;
-                out->len = len;
-                out->type = NumArray;
-                out->byte = byte;
-                return out;
-            }
-            else
-            {
-                free(out);
-                return NULL;
-            }
+            out->val = new_array;
+            out->len = len;
+            out->type = NumArray;
+            out->byte = byte;
+            return out;
         }
-        else return NULL;
+        else
+        {
+            free(out);
+            return NULL;
+        }
     }
     else return NULL;
 }
@@ -1127,39 +1077,31 @@ static void* resize_array(int byte, int o_byte, void* array, int len)
 
 dh_LineOut *dh_LineOut_CreateString(const char *str)
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    char* str_copy = dh_strdup(str);
+    if(str_copy)
     {
-        char* str_copy = dh_strdup(str);
-        if(str_copy)
-        {
-            out->val = str_copy;
-            out->len = strlen(str_copy) + 1;
-            out->type = String;
-            out->byte = sizeof(char);
-            return out;
-        }
-        else
-        {
-            free(out);
-            return NULL;
-        }
+        out->val = str_copy;
+        out->len = strlen(str_copy) + 1;
+        out->type = String;
+        out->byte = sizeof(char);
+        return out;
     }
-    else return NULL;
+    else
+    {
+        free(out);
+        return NULL;
+    }
 }
 
 dh_LineOut *dh_LineOut_CreateEmpty()
 {
-    dh_LineOut* out = (dh_LineOut*)malloc(sizeof(dh_LineOut));
-    if(out)
-    {
-        out->val = NULL;
-        out->len = 0;
-        out->type = Empty;
-        out->byte = 0;
-        return out;
-    }
-    else return NULL;
+    dh_LineOut* out = g_new(dh_LineOut, 1);
+    out->val = NULL;
+    out->len = 0;
+    out->type = Empty;
+    out->byte = 0;
+    return out;
 }
 
 
@@ -1202,7 +1144,7 @@ dh_LineOut *InputLine_Get_MoreDigits_WithByte(int byte, int range_check, int nee
     return out;
 }
 
-int dh_string_getline(char** input, size_t* n, FILE* stream)
+int dh_getline(char** input, size_t* n, FILE* stream)
 {
     return dh_getdelim(input, n ,'\n' ,stream );
 }
@@ -1278,18 +1220,14 @@ dh_limit * dh_limit_Init(dh_out_type type)
 {
     if(type == Integer || type == NumArray || type == Float || type == Double || type == DoubleArray || type == FloatArray )
     {
-        dh_limit* out = (dh_limit*)malloc(sizeof(dh_limit));
-        if(out)
-        {
-            out->type = type;
-            out->limit = NULL;
-            out->limit_num = 0;
-            out->same_range = 0;
-            out->unlimited_lens = 0;
-            out->lens = 0;
-            return out;
-        }
-        else return NULL;
+        dh_limit* out = g_new(dh_limit, 1);
+        out->type = type;
+        out->limit = NULL;
+        out->limit_num = 0;
+        out->same_range = 0;
+        out->unlimited_lens = 0;
+        out->lens = 0;
+        return out;
     }
     else return NULL;
 }
@@ -1384,7 +1322,7 @@ void dh_limit_Free(dh_limit* limit)
         free( (limit->limit)[i] );
     }
     free(limit->limit);
-    free(limit);
+    g_free(limit);
 }
 
 int dh_limit_SetArrayArgs(dh_limit* limit ,int lens, int same_range, int check_repeated, int unlimited_lens)

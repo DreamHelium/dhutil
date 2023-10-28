@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include "list_util.h"
+#include "dh_list_util.h"
 #include "dh_string_util.h"
 
 static int strstr_to_int(gconstpointer element, gconstpointer user_data)

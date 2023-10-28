@@ -1,5 +1,5 @@
 /*  dh_general_isoc - General ISO-C class
-    Copyright (C) 2022 Dream Helium
+    Copyright (C) 2023 Dream Helium
     This file is part of dhutil.
 
     This program is free software: you can redistribute it and/or modify

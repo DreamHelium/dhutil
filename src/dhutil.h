@@ -1,6 +1,6 @@
-/*  dh_general_isoc - General ISO-C class
-    Copyright (C) 2023 Dream Helium
-    This file is part of dhutil.
+/*  dhutil - Utils by Dream Helium
+    Copyright (C) 2022 Dream Helium
+    This file is part of litematica_reader_c.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -15,18 +15,14 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#ifndef DH_GENERAL_ISOC_H
-#define DH_GENERAL_ISOC_H
+#ifndef DHUTIL_H
+#define DHUTIL_H
 
-#include <glib-object.h>
+#include <dh/dh_string_util.h>
+#include <dh/dh_file_util.h>
+#include <dh/dh_list_util.h>
+#include <dh/dh_data_ooc.h>
+#include <dh/dh_generaliface.h>
+#include <dh/dh_general_isoc.h>
 
-G_BEGIN_DECLS
-
-#define DH_TYPE_ISOC dh_isoc_get_type()
-G_DECLARE_FINAL_TYPE (DhIsoc, dh_isoc, DH, ISOC, GObject)
-
-DhIsoc* dh_general_isoc_new();
-
-G_END_DECLS
-
-#endif
+#endif /* DHUTIL_H */

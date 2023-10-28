@@ -96,11 +96,15 @@ int dh_default_selector(const char* tip, int opt, const char* opt_name);
 void dh_string_ChangeImpl(dh_string_impl* impl);
 
 /** Get a line input and return output (1 number or character), return 64bit num by default */
+G_DEPRECATED_FOR(InputLine_General)
 dh_LineOut* InputLine_Get_OneOpt(int range_check, int need_num, int arg_num, ...);
+G_DEPRECATED_FOR(InputLine_General)
 dh_LineOut* InputLine_Get_OneOpt_WithByte(int byte, int range_check, int need_num, int arg_num, ...);
 /** Get a line input and return output (n numbers or character)
  *  should pass like this: (nums): min and max, (char): char. */
+G_DEPRECATED_FOR(InputLine_General)
 dh_LineOut* InputLine_Get_MoreDigits(int range_check, int need_nums, int arg_num, ...);
+G_DEPRECATED_FOR(InputLine_General)
 dh_LineOut* InputLine_Get_MoreDigits_WithByte(int byte, int range_check, int need_nums, int arg_num, ...);
 /** A better way to get output, byte will be ignored in Float/Double(or array) mode */
 dh_LineOut* InputLine_General(int byte, dh_limit* limit, int get_string, const char* args, int allow_empty);
@@ -117,6 +121,7 @@ dh_LineOut* dh_LineOut_CreateEmpty();
 
 void dh_LineOut_Free(dh_LineOut* lo);
 
+G_DEPRECATED_FOR(g_strdup)
 char* dh_strdup(const char *o_str);
 char* dh_StrArray_cat(dh_StrArray* arr);
 
@@ -129,8 +134,9 @@ guint dh_StrArray_FindChar(dh_StrArray* arr, char key);
 
 void dh_StrArray_Free(dh_StrArray* arr);
 
-/** Use getline() if provided, otherwise use another implement */
-int dh_string_getline(char** input, size_t* n, FILE* stream);
+/** Use dh_getdelim */
+int dh_getline(char** input, size_t* n, FILE* stream);
+#define dh_string_getline(input, n, stream) dh_getline(input, n, stream)
 
 int dh_getdelim(char** input, size_t* n,int delim, FILE* stream);
 

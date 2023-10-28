@@ -16,8 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_string_util.h"
-#include "file_util.h"
-#include "list_util.h"
+#include "dh_file_util.h"
+#include "dh_list_util.h"
 #include <stdlib.h>
 #include <string.h>
 #include <gio/gio.h>

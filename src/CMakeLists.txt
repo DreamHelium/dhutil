@@ -43,5 +43,6 @@ install(FILES "dh_generaliface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/
 install(FILES "dh_general_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_data_ooc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
+install(FILES "dh_deprecated.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionuiiface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionui_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

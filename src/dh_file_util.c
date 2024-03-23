@@ -15,6 +15,8 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
+
+#define DH_USE_DHLRC_FILE_UTIL
 #include "dh_string_util.h"
 #include "dh_file_util.h"
 #include "dh_list_util.h"
@@ -34,7 +36,7 @@ static int strstr_to_int(gconstpointer element, gconstpointer user_data)
     else return -1;
 }
 
-int dhlrc_WriteFile(char* pos,char* content, size_t count)
+int dhlrc_write_file(char* pos,char* content, size_t count)
 {
     FILE* f = fopen(pos,"wb");
     fwrite(content,1,count,f);
@@ -42,7 +44,7 @@ int dhlrc_WriteFile(char* pos,char* content, size_t count)
     return 0;
 }
 
-char *dhlrc_ReadFile(const char *filepos, int *size)
+char *dhlrc_read_file(const char *filepos, int *size)
 {
     FILE* f = fopen(filepos,"rb");
     if(f)
@@ -75,7 +77,7 @@ int dhlrc_mkconfig()
         cJSON_AddStringToObject(config, "RecipeConfig", "recipes/");
         cJSON_AddStringToObject(config, "ItemTranslate", "translation.json");
         char* config_char = cJSON_Print(config);
-        dhlrc_WriteFile("config.json", config_char, strlen(config_char));
+        dhlrc_write_file("config.json", config_char, strlen(config_char));
         free(config_char);
         cJSON_Delete(config);
         return 0;
@@ -83,17 +85,17 @@ int dhlrc_mkconfig()
     else return -1;
 }
 
-int dhlrc_ConfigExist()
+int dhlrc_confirm_config_exist()
 {
-    return dhlrc_FileExist("config.json");
+    return dhlrc_file_exist("config.json");
 }
 
-char *dhlrc_ConfigContent(const char *str)
+char *dhlrc_config_content(const char *str)
 {
-    if(dhlrc_ConfigExist())
+    if(dhlrc_confirm_config_exist())
     {
         int size;
-        char* json = dhlrc_ReadFile("config.json", &size);
+        char* json = dhlrc_read_file("config.json", &size);
         if(json)
         {
             cJSON* json_content = cJSON_ParseWithLength(json, size);
@@ -112,7 +114,7 @@ char *dhlrc_ConfigContent(const char *str)
     else return NULL;
 }
 
-int dhlrc_FileExist(const char *filepos)
+int dhlrc_file_exist(const char *filepos)
 {
     FILE* f = fopen(filepos, "rb");
     if(f)
@@ -123,10 +125,10 @@ int dhlrc_FileExist(const char *filepos)
     else return 0;
 }
 
-cJSON *dhlrc_FileToJSON(const char *pos)
+cJSON *dhlrc_file_to_json(const char *pos)
 {
     int size;
-    char* data = dhlrc_ReadFile(pos, &size);
+    char* data = dhlrc_read_file(pos, &size);
     if(data)
     {
         cJSON* json_data = cJSON_ParseWithLength(data, size);
@@ -137,7 +139,7 @@ cJSON *dhlrc_FileToJSON(const char *pos)
     else return NULL;
 }
 
-GList* dh_FileList_Create(const char* pos)
+GList* dh_file_list_create(const char* pos)
 {
     GFile* dir = g_file_new_for_path(pos);
     GError* err = NULL;
@@ -164,9 +166,9 @@ GList* dh_FileList_Create(const char* pos)
     return list;
 }
 
-GList *dh_FileList_SearchInDir(const char *pos, const char *name)
+GList *dh_file_list_search_in_dir(const char *pos, const char *name)
 {
-    GList* filelist = dh_FileList_Create(pos);
+    GList* filelist = dh_file_list_create(pos);
     if(filelist == NULL)
         return NULL;
     GList* result = dh_search_in_list(filelist, name);

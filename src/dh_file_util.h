@@ -26,16 +26,18 @@ extern "C"{
 #include <cjson/cJSON.h>
 #include <gmodule.h>
 
+#ifdef DH_USE_DHLRC_FILE_UTIL
+int     dhlrc_write_file(char* pos, char* content, size_t count);
+char*   dhlrc_read_file(const char* filepos, int* size);
+int     dhlrc_mkconfig();
+int     dhlrc_confirm_config_exist();
+int     dhlrc_file_exist(const char* filepos);
+char*   dhlrc_config_content(const char* str);
+cJSON*  dhlrc_file_to_json(const char* pos);
+#endif
 
-int dhlrc_WriteFile(char* pos, char* content, size_t count);
-char* dhlrc_ReadFile(const char* filepos, int* size);
-int dhlrc_mkconfig();
-int dhlrc_ConfigExist();
-int dhlrc_FileExist(const char* filepos);
-char* dhlrc_ConfigContent(const char* str);
-cJSON* dhlrc_FileToJSON(const char* pos);
-GList* dh_FileList_Create(const char* pos);
-GList* dh_FileList_SearchInDir(const char* pos, const char* name);
+GList*  dh_file_list_create(const char* pos);
+GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
 
 
 #ifdef __cplusplus

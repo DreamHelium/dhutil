@@ -15,6 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
+#define DH_USE_OLD_INPUT_LINE_FUNC
 #include "dh_string_util.h"
 #include <stddef.h>
 #include <stdlib.h>
@@ -751,7 +752,7 @@ char *dh_strdup(const char *o_str)
 #endif
 }
 
-char* dh_StrArray_cat(dh_StrArray* arr)
+char* dh_str_array_cat(DhStrArray* arr)
 {
     int len = 0;
     if( arr )
@@ -794,7 +795,7 @@ static guint find_char(const char* str, char key)
     return i;
 }
 
-guint dh_StrArray_FindChar(dh_StrArray* arr, char key)
+guint dh_str_array_find_char(DhStrArray* arr, char key)
 {
     guint char_num = 0;
     for(int i = 0 ; i < arr->num ; i++)
@@ -817,9 +818,9 @@ void dh_LineOut_Free(dh_LineOut *lo)
     g_free(lo);
 }
 
-dh_StrArray *dh_StrArray_Init(const char *str)
+DhStrArray *dh_str_array_init(const char *str)
 {
-    dh_StrArray* arr = g_new(dh_StrArray, 1);
+    DhStrArray* arr = g_new(DhStrArray, 1);
     arr->num = 1;
     arr->val = g_new(char*, 2);
     arr->val[0] = g_strdup(str);
@@ -827,17 +828,17 @@ dh_StrArray *dh_StrArray_Init(const char *str)
     return arr;
 }
 
-int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
+int dh_str_array_add_str(DhStrArray **arr, const char *str)
 {
     if(*arr == NULL)
     {
-        dh_StrArray* arr_init = dh_StrArray_Init(str);
+        DhStrArray* arr_init = dh_str_array_init(str);
         *arr = arr_init;
         return 0;
     }
     else
     {
-        dh_StrArray* o_arr = *arr;
+        DhStrArray* o_arr = *arr;
         char** p_arr = g_renew(char*, o_arr->val, o_arr->num + 2);
         o_arr->val = p_arr;
         o_arr->val[o_arr->num] = g_strdup(str);
@@ -847,7 +848,7 @@ int dh_StrArray_AddStr(dh_StrArray **arr, const char *str)
     }
 }
 
-gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str)
+gboolean dh_str_array_find_repeated(DhStrArray* arr, const char* str)
 {
     if(arr){
         for(int i = 0 ; i < arr->num; i++)
@@ -859,7 +860,7 @@ gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str)
     return FALSE;
 }
 
-void dh_StrArray_Free(dh_StrArray *arr)
+void dh_str_array_free(DhStrArray *arr)
 {
     if(arr)
     {

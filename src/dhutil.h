@@ -24,5 +24,6 @@
 #include <dh/dh_data_ooc.h>
 #include <dh/dh_generaliface.h>
 #include <dh/dh_general_isoc.h>
+#include <dh/dh_deprecated.h>
 
 #endif /* DHUTIL_H */

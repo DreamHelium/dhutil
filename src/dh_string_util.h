@@ -27,6 +27,8 @@ extern "C"{
 #include <stdarg.h>
 #include <glib.h>
 
+#ifdef DH_USE_OLD_INPUT_LINE_FUNC
+
 /** The type of the dh_Line_IO */
 typedef enum dh_out_type{
     Integer, Float, Double, Character, NumArray, String, DoubleArray, FloatArray,
@@ -63,11 +65,6 @@ typedef struct dh_LineOut
     int byte;
 }
 dh_LineOut;
-
-typedef struct dh_StrArray{
-    char** val;
-    int num;
-} dh_StrArray;
 
 typedef struct dh_string_impl{
     /** vprintf() replacement */
@@ -120,26 +117,6 @@ dh_LineOut* dh_LineOut_CreateString(const char* str);
 dh_LineOut* dh_LineOut_CreateEmpty();
 
 void dh_LineOut_Free(dh_LineOut* lo);
-
-G_DEPRECATED_FOR(g_strdup)
-char* dh_strdup(const char *o_str);
-char* dh_StrArray_cat(dh_StrArray* arr);
-
-dh_StrArray* dh_StrArray_Init(const char* str);
-
-int dh_StrArray_AddStr(dh_StrArray** arr ,const char* str);
-
-gboolean dh_StrArray_FindRepeated(dh_StrArray* arr, const char* str);
-guint dh_StrArray_FindChar(dh_StrArray* arr, char key);
-
-void dh_StrArray_Free(dh_StrArray* arr);
-
-/** Use dh_getdelim */
-int dh_getline(char** input, size_t* n, FILE* stream);
-#define dh_string_getline(input, n, stream) dh_getline(input, n, stream)
-
-int dh_getdelim(char** input, size_t* n,int delim, FILE* stream);
-
 /** Initize a limit type
  *  WARNING: Recommend that don't edit struct directly */
 dh_limit* dh_limit_Init(dh_out_type type);
@@ -153,6 +130,26 @@ int dh_limit_AddDouble(dh_limit* limit, double min, double max);
 /** Free dh_limit */
 void dh_limit_Free(dh_limit* limit);
 
+#endif
+
+typedef struct DhStrArray{
+    char** val;
+    int num;
+} DhStrArray;
+
+G_DEPRECATED_FOR(g_strdup)
+char*       dh_strdup(const char *o_str);
+char*       dh_str_array_cat(DhStrArray* arr);
+DhStrArray* dh_str_array_init(const char* str);
+int         dh_str_array_add_str(DhStrArray** arr ,const char* str);
+gboolean    dh_str_array_find_repeated(DhStrArray* arr, const char* str);
+guint       dh_str_array_find_char(DhStrArray* arr, char key);
+void        dh_str_array_free(DhStrArray* arr);
+
+/** Use dh_getdelim */
+int         dh_getline(char** input, size_t* n, FILE* stream);
+#define     dh_string_getline(input, n, stream) dh_getline(input, n, stream)
+int         dh_getdelim(char** input, size_t* n,int delim, FILE* stream);
 
 #ifdef __cplusplus
 }

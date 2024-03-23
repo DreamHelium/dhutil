@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-19 14:57+0800\n"
+"POT-Creation-Date: 2023-11-19 19:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,39 +17,39 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/dh_string_util.c:183
+#: src/dh_string_util.c:181
 msgid "Unrecognized string, please enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:186
+#: src/dh_string_util.c:184
 msgid "Number out of range, please enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:189
+#: src/dh_string_util.c:187
 msgid "Number out of range of the integer, please enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:192
+#: src/dh_string_util.c:190
 msgid ""
 "Unrecognized charater afterwards (or in the middle), or couldn't meet the "
 "need of the input. please enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:196
+#: src/dh_string_util.c:194
 msgid ""
 "Out of memory? Maybe you should take some measures to release the memory and "
 "try to enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:200
+#: src/dh_string_util.c:198
 msgid "Repeated number! please enter again: "
 msgstr ""
 
-#: src/dh_string_util.c:203
+#: src/dh_string_util.c:201
 msgid "Error in format of limit, consult the software developer!\n"
 msgstr ""
 
-#: src/dh_string_util.c:372
+#: src/dh_string_util.c:370
 msgid "Terminated input or unexpected situation!\n"
 msgstr ""
 

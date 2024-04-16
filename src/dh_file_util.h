@@ -29,11 +29,7 @@ extern "C"{
 #ifdef DH_USE_DHLRC_FILE_UTIL
 int     dhlrc_write_file(char* pos, char* content, size_t count);
 char*   dhlrc_read_file(const char* filepos, int* size);
-int     dhlrc_mkconfig();
-int     dhlrc_confirm_config_exist();
 int     dhlrc_file_exist(const char* filepos);
-char*   dhlrc_config_content(const char* str);
-cJSON*  dhlrc_file_to_json(const char* pos);
 #endif
 
 GList*  dh_file_list_create(const char* pos);

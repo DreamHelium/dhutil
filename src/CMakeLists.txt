@@ -34,7 +34,8 @@ target_include_directories(dhutil
         "${GLIB_INCLUDE_DIRS}"
         "${GIO_INCLUDE_DIRS}")
 
-target_link_libraries(dhutil PUBLIC cjson ${GLIB_LIBRARIES} ${GIO_LIBRARIES})
+# This library needn't to use cjson
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES})
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
@@ -43,6 +44,6 @@ install(FILES "dh_generaliface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/
 install(FILES "dh_general_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_data_ooc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-install(FILES "dh_deprecated.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
+# install(FILES "dh_deprecated.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionuiiface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionui_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

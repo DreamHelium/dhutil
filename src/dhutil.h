@@ -18,12 +18,11 @@
 #ifndef DHUTIL_H
 #define DHUTIL_H
 
-#include <dh/dh_string_util.h>
-#include <dh/dh_file_util.h>
-#include <dh/dh_list_util.h>
-#include <dh/dh_data_ooc.h>
-#include <dh/dh_generaliface.h>
-#include <dh/dh_general_isoc.h>
-#include <dh/dh_deprecated.h>
+#include <dh_string_util.h>
+#include <dh_file_util.h>
+#include <dh_list_util.h>
+#include <dh_data_ooc.h>
+#include <dh_generaliface.h>
+#include <dh_general_isoc.h>
 
 #endif /* DHUTIL_H */

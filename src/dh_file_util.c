@@ -65,54 +65,6 @@ char *dhlrc_read_file(const char *filepos, int *size)
     }
 }
 
-int dhlrc_mkconfig()
-{
-    cJSON* config = cJSON_CreateObject();
-    if(config)
-    {
-        cJSON_AddStringToObject(config, "OverrideLang", "");
-        cJSON_AddStringToObject(config, "SecondLang", "");
-        cJSON_AddStringToObject(config, "langDir", "lang/");
-        cJSON_AddStringToObject(config, "AdditionConfig", "config/");
-        cJSON_AddStringToObject(config, "RecipeConfig", "recipes/");
-        cJSON_AddStringToObject(config, "ItemTranslate", "translation.json");
-        char* config_char = cJSON_Print(config);
-        dhlrc_write_file("config.json", config_char, strlen(config_char));
-        free(config_char);
-        cJSON_Delete(config);
-        return 0;
-    }
-    else return -1;
-}
-
-int dhlrc_confirm_config_exist()
-{
-    return dhlrc_file_exist("config.json");
-}
-
-char *dhlrc_config_content(const char *str)
-{
-    if(dhlrc_confirm_config_exist())
-    {
-        int size;
-        char* json = dhlrc_read_file("config.json", &size);
-        if(json)
-        {
-            cJSON* json_content = cJSON_ParseWithLength(json, size);
-            cJSON* json_str = cJSON_GetObjectItem(json_content, str);
-            free(json);
-            if(cJSON_IsString(json_str))
-            {
-                char* ret = dh_strdup(cJSON_GetStringValue(json_str));
-                cJSON_Delete(json_content);
-                return ret;
-            }
-            else return NULL; /** \todo add item*/
-        }
-        else return NULL;
-    }
-    else return NULL;
-}
 
 int dhlrc_file_exist(const char *filepos)
 {
@@ -123,20 +75,6 @@ int dhlrc_file_exist(const char *filepos)
         return 1;
     }
     else return 0;
-}
-
-cJSON *dhlrc_file_to_json(const char *pos)
-{
-    int size;
-    char* data = dhlrc_read_file(pos, &size);
-    if(data)
-    {
-        cJSON* json_data = cJSON_ParseWithLength(data, size);
-        free(data);
-        if(json_data) return json_data;
-        else return NULL;
-    }
-    else return NULL;
 }
 
 GList* dh_file_list_create(const char* pos)

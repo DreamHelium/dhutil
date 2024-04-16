@@ -1,3 +1,9 @@
 build
 po/*.po~
 .cache
+
+.vscode
+.xmake
+
+# Since I didn't complete transforming to XMake
+xmake.lua

@@ -34,6 +34,9 @@ int     dhlrc_file_exist(const char* filepos);
 
 GList*  dh_file_list_create(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
+gboolean dh_file_exist(const char* filepos);
+/* Use GIO's load_contents method */
+char* dh_read_file(const char* filepos, gsize* size);
 
 
 #ifdef __cplusplus

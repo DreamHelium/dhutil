@@ -113,3 +113,45 @@ GList *dh_file_list_search_in_dir(const char *pos, const char *name)
     g_list_free_full(filelist, free);
     return result;
 }
+
+gboolean dh_file_exist(const char* filepos)
+{
+    GFile* file = g_file_new_for_path(filepos);
+    if(file)
+    {
+        gboolean ret = g_file_query_exists(file, NULL);
+        g_object_unref(file);
+        return ret;
+    }
+    else return FALSE;
+}
+
+
+char* dh_read_file(const char* filepos, gsize* size)
+{
+    GFile* file = g_file_new_for_path(filepos);
+    if(file)
+    {
+        if(g_file_query_exists(file, NULL))
+        {
+            char* contents = NULL;
+            if(g_file_load_contents(file, NULL, &contents, size, NULL, NULL))
+            {
+                g_object_unref(file);
+                return contents;
+            }
+            else
+            {
+                g_free(contents);
+                g_object_unref(file);
+                return NULL;
+            }
+        }
+        else
+        {
+            g_object_unref(file);
+            return NULL;
+        }
+    }
+    else return NULL;
+}

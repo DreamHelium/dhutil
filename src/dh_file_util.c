@@ -155,3 +155,29 @@ char* dh_read_file(const char* filepos, gsize* size)
     }
     else return NULL;
 }
+
+gboolean dh_write_file(const char* filepos, char* content, gsize count)
+{
+    GFile* file = g_file_new_for_path(filepos);
+    if(file)
+    {
+        if(g_file_query_exists(file, NULL))
+            g_file_delete(file, NULL, NULL);
+        GFileIOStream* fios = g_file_create_readwrite(file, G_FILE_CREATE_NONE, NULL, NULL);
+        if(fios)
+        {
+            GOutputStream* os = g_io_stream_get_output_stream(G_IO_STREAM(fios));
+            int ret_d = g_output_stream_write(os, content, count, NULL, NULL);
+            gboolean ret = (ret_d == -1? FALSE : TRUE);
+            g_object_unref(fios);
+            g_object_unref(file);
+            return ret;
+        }
+        else
+        {
+            g_object_unref(file);
+            return FALSE;
+        }
+    }
+    else return FALSE;
+}

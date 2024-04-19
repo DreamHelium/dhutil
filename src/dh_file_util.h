@@ -37,6 +37,7 @@ GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
 gboolean dh_file_exist(const char* filepos);
 /* Use GIO's load_contents method */
 char* dh_read_file(const char* filepos, gsize* size);
+gboolean dh_write_file(const char* filepos, char* content, gsize count);
 
 
 #ifdef __cplusplus

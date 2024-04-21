@@ -25,6 +25,7 @@ extern "C"{
 #include <stdio.h>
 #include <cjson/cJSON.h>
 #include <gmodule.h>
+#include <gio/gio.h>
 
 #ifdef DH_USE_DHLRC_FILE_UTIL
 int     dhlrc_write_file(char* pos, char* content, size_t count);
@@ -35,9 +36,13 @@ int     dhlrc_file_exist(const char* filepos);
 GList*  dh_file_list_create(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
 gboolean dh_file_exist(const char* filepos);
+/* Unlike GIO's create, it just create a file */
+gboolean dh_file_create(const char* filepos, gboolean is_file);
+gboolean dh_file_create_gfile(GFile* file, gboolean is_file);
 /* Use GIO's load_contents method */
 char* dh_read_file(const char* filepos, gsize* size);
 gboolean dh_write_file(const char* filepos, char* content, gsize count);
+gboolean dh_write_file_gfile(GFile* file, char* content, gsize count);
 
 
 #ifdef __cplusplus

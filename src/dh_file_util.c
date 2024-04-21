@@ -114,6 +114,49 @@ GList *dh_file_list_search_in_dir(const char *pos, const char *name)
     return result;
 }
 
+gboolean dh_file_create(const char* filepos, gboolean is_file)
+{
+    GFile* file = g_file_new_for_path(filepos);
+    gboolean ret = dh_file_create_gfile(file, is_file);
+    g_object_unref(file);
+    return ret;
+}
+
+gboolean dh_file_create_gfile(GFile* file, gboolean is_file)
+{
+    if(!file)
+        return FALSE;
+    GError* error = NULL;
+    if(file)
+    {
+        if(g_file_query_exists(file, NULL)) /* If file exists, delete file */
+        {
+            if(!g_file_delete(file, NULL, &error)) /* Couldn't delete file */
+                goto error_handle;
+        }
+        /* I'll use a dummy way to create file
+         * First, I'll mkdir */
+        if(!g_file_make_directory_with_parents(file, NULL, &error))
+            goto error_handle;
+        if(is_file)
+        {
+            if(!g_file_delete(file, NULL, &error))
+                goto error_handle;
+            GFileOutputStream* gfos = g_file_create(file, G_FILE_CREATE_NONE, NULL, &error);
+            if(error)
+                goto error_handle;
+            g_object_unref(gfos);
+            return TRUE;
+        }
+        else return TRUE; /* It's directory */
+    }
+    else return FALSE;
+
+error_handle:
+    g_free(error);
+    return FALSE;
+}
+
 gboolean dh_file_exist(const char* filepos)
 {
     GFile* file = g_file_new_for_path(filepos);
@@ -156,28 +199,32 @@ char* dh_read_file(const char* filepos, gsize* size)
     else return NULL;
 }
 
+
 gboolean dh_write_file(const char* filepos, char* content, gsize count)
 {
     GFile* file = g_file_new_for_path(filepos);
-    if(file)
+    gboolean ret = dh_write_file_gfile(file, content, count);
+    g_object_unref(file);
+    return ret;
+}
+
+gboolean dh_write_file_gfile(GFile* file, char* content, gsize count)
+{
+    if(!file)
+        return FALSE;
+    if(!dh_file_create_gfile(file, TRUE))
+        return FALSE;
+    GFileIOStream* fios = g_file_open_readwrite(file, NULL, NULL);
+    if(fios)
     {
-        if(g_file_query_exists(file, NULL))
-            g_file_delete(file, NULL, NULL);
-        GFileIOStream* fios = g_file_create_readwrite(file, G_FILE_CREATE_NONE, NULL, NULL);
-        if(fios)
-        {
-            GOutputStream* os = g_io_stream_get_output_stream(G_IO_STREAM(fios));
-            int ret_d = g_output_stream_write(os, content, count, NULL, NULL);
-            gboolean ret = (ret_d == -1? FALSE : TRUE);
-            g_object_unref(fios);
-            g_object_unref(file);
-            return ret;
-        }
-        else
-        {
-            g_object_unref(file);
-            return FALSE;
-        }
+        GOutputStream* os = g_io_stream_get_output_stream(G_IO_STREAM(fios));
+        int ret_d = g_output_stream_write(os, content, count, NULL, NULL);
+        gboolean ret = (ret_d == -1? FALSE : TRUE);
+        g_object_unref(fios);
+        return ret;
     }
-    else return FALSE;
+    else
+    {
+        return FALSE;
+    }
 }

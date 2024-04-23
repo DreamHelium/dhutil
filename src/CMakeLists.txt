@@ -3,6 +3,10 @@ set(DHUTIL_MAIN_POT_FILE_DEPENDS
     PARENT_SCOPE
 )
 
+list(APPEND CMAKE_MODULE_PATH
+    /usr/share/VCM/Vala
+)
+
 add_definitions (
     -DPACKAGE="${PACKAGE}"
     -DLOCALEDIR="${INSTALL_PREFIX}/share/locale"
@@ -15,6 +19,8 @@ file(GLOB HEADERS
     dh_data_ooc.h
     dh_generaliface.h
     dh_general_isoc.h
+#?
+    dh_validator.c
 #   dh_questionuiiface.h dh_questionui_isoc.h
 )
 set(SOURCES
@@ -43,6 +49,7 @@ install(FILES "dh_list_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh"
 install(FILES "dh_generaliface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_general_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_data_ooc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
+install(FILES "dh_validator.c" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_deprecated.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionuiiface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

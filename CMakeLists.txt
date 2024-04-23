@@ -16,6 +16,8 @@ pkg_search_module(GIO REQUIRED gio-2.0)
 
 set(DHUTIL_LIB dhutil)
 
+add_definitions(-DGETTEXT_PACKAGE="dhutil")
+
 add_subdirectory(src)
 add_subdirectory(po)
 

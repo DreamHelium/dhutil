@@ -20,7 +20,7 @@ file(GLOB HEADERS
     dh_generaliface.h
     dh_general_isoc.h
 #?
-    dh_validator.c
+    dh_validator.h
 #   dh_questionuiiface.h dh_questionui_isoc.h
 )
 set(SOURCES
@@ -30,6 +30,7 @@ set(SOURCES
     dh_data_ooc.c
     dh_generaliface.c
     dh_general_isoc.c
+    dh_validator.c
 #   dh_questionuiiface.c dh_questionui_isoc.c
 )
 
@@ -49,7 +50,7 @@ install(FILES "dh_list_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh"
 install(FILES "dh_generaliface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_general_isoc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_data_ooc.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-install(FILES "dh_validator.c" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
+install(FILES "dh_validator.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_deprecated.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 # install(FILES "dh_questionuiiface.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

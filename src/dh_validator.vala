@@ -1,3 +1,5 @@
+delegate string? DhLineinFunc();
+
 interface DhValidator <T, V> : GLib.Object{
     public abstract bool in_field(V val);
     public abstract void set_range(T min_val,T max_val);
@@ -6,7 +8,15 @@ interface DhValidator <T, V> : GLib.Object{
 class DhIntValidator : Object, DhValidator <int64?, int64?>{
     int64 min;
     int64 max;
+    bool ignore = false;
+    public DhIntValidator.ignore_range(bool ir){
+        ignore = ir;
+    }
+    public DhIntValidator(int64 min, int64 max){
+        this.set_range(min, max);
+    }
     public bool in_field(int64? val) {
+        if(ignore) return true;
         if(val >= min && val <= max)
             return true;
         else return false;
@@ -26,7 +36,15 @@ class DhIntValidator : Object, DhValidator <int64?, int64?>{
 class DhUIntValidator : Object, DhValidator <uint64?, uint64?>{
     uint64 min;
     uint64 max;
+    bool ignore = false;
+    public DhUIntValidator.ignore_range(bool ir){
+        ignore = ir;
+    }
+    public DhUIntValidator(uint64 min, uint64 max){
+        this.set_range(min, max);
+    }
     public bool in_field(uint64? val) {
+        if(ignore) return true;
         if(val >= min && val <= max)
             return true;
         else return false;
@@ -46,7 +64,15 @@ class DhUIntValidator : Object, DhValidator <uint64?, uint64?>{
 class DhDoubleValidator : Object, DhValidator<double?, double?>{
     double min;
     double max;
+    bool ignore = false;
+    public DhDoubleValidator.ignore_range(bool ir){
+        ignore = ir;
+    }
+    public DhDoubleValidator(double min, double max){
+        this.set_range(min, max);
+    }
     public bool in_field(double? val) {
+        if(ignore) return true;
         if(val >= min && val <= max)
             return true;
         else return false;
@@ -65,6 +91,9 @@ class DhDoubleValidator : Object, DhValidator<double?, double?>{
 
 class DhRegexValidator : Object, DhValidator<Regex?, string>{
     Regex reg;
+    public DhRegexValidator(Regex r){
+        this.set_range(r, null);
+    }
     public bool in_field(string val) {
         if(reg == null)
             return false;
@@ -82,7 +111,15 @@ class DhRegexValidator : Object, DhValidator<Regex?, string>{
 
 class DhMatchValidator : Object, DhValidator<string, string>{
     string match_str;
+    bool ignore = false;
+    public DhMatchValidator.ignore_range(bool ir){
+        ignore = ir;
+    }
+    public DhMatchValidator(string str){
+        this.set_range(str, "");
+    }
     public bool in_field(string val) {
+        if(ignore) return true;
         if(match_str == null)
             return false;
         else return Regex.match_simple(match_str, val);
@@ -91,6 +128,66 @@ class DhMatchValidator : Object, DhValidator<string, string>{
         if(min_val != null)
             match_str = min_val;
         else match_str = max_val;
+    }
+}
+
+class DhIntArrayValidator : Object, DhValidator<List<int64?>?, List<int64?>?>{
+    List<int64?> min = null;
+    List<int64?> max = null;
+    public string split_str;
+    bool allow_repeated;
+    bool ignore = false;
+    public DhIntArrayValidator.ignore_range(bool ir){
+        ignore = ir;
+    }
+    public bool in_field(List<int64?>? val){
+        if(ignore) return true;
+        uint len = min.length();
+        bool same_range = false;
+        if(len == 1)
+            same_range = true;
+        if(!allow_repeated){
+            for(int i = 0 ; i < val.length() ; i++)
+            {
+                int64 temp = val.nth_data(i);
+                for(int j = i + 1; j < val.length() ; j++){
+                    int64 temp_1 = val.nth_data(j);
+                    if(temp == temp_1){
+                        return false;
+                    }
+                }
+            }
+        }
+        for(int i = 0 ; i < val.length() ; i++)
+        {
+            int64 min_val;
+            int64 max_val;
+            if(same_range){
+                min_val = (int64)min.nth_data(0);
+                max_val = (int64)max.nth_data(0);
+            }
+            else{
+                min_val = (int64)min.nth_data(i);
+                max_val = (int64)max.nth_data(i);
+            }
+            if(val.nth_data(i) < min_val || val.nth_data(i) > max_val)
+                return false;
+        }
+        return true;
+    }
+    public void set_range(List<int64?>? min_val, List<int64?>? max_val){
+        min = (List<int64?>)min_val.copy();
+        max = (List<int64?>)max_val.copy();
+    }
+    public void add_range(int64 min_val, int64 max_val){
+        min.append(min_val);
+        max.append(max_val);
+    }
+    public void set_split_str(string sp_str){
+        split_str = sp_str;
+    }
+    public void set_allow_repeated(bool ar){
+        allow_repeated = ar;
     }
 }
 
@@ -106,7 +203,7 @@ class DhArgInfo : Object{
     }
     public string help_message(string gettext_package)
     {
-        string str = _("The arguments are:\n");
+        string str = dgettext("dhutil" ,"The arguments are:\n");
         for(int i = 0 ; i < arg.length() ; i++){
             str += "\"";
             string temp_str = string.nfill(1, arg.nth_data(i));
@@ -121,27 +218,36 @@ class DhArgInfo : Object{
     }
     public char match_char(string str)
     {
+        string pstr = str.ascii_down();
         for(int i = 0 ; i < arg.length() ; i++)
         {
             string match_str = "^%c$";
             match_str = match_str.printf(arg.nth_data(i));
-            if(Regex.match_simple(match_str, str))
+            if(Regex.match_simple(match_str, pstr))
                 return arg.nth_data(i);
             match_str = "^%s$";
             match_str = match_str.printf(arg_fullname.nth_data(i));
-            if(Regex.match_simple(match_str, str))
+            if(Regex.match_simple(match_str, pstr))
                 return arg.nth_data(i);
         }
+        if(pstr == "")
+            return arg.nth_data(0);
         return 0;
     }
 }
 
 class DhOut : Object{
     public Value read_and_output(string tip_message, string gettext_package,
-                        DhArgInfo? arg, DhValidator validator){
+                        DhArgInfo? arg, DhValidator? validator, bool get_array){
+        return read_and_output_custom(stdin.read_line, tip_message, gettext_package,
+                                      arg, validator, get_array);
+    }
+
+    public Value read_and_output_custom(DhLineinFunc func, string tip_message, string gettext_package,
+                        DhArgInfo? arg, DhValidator? validator, bool get_array){
         while(true){
             print(dgettext(gettext_package, tip_message));
-            string str = stdin.read_line();
+            string str = func();
             if(str == null) /* Error occured */
                 return Type.NONE;
             else{
@@ -196,10 +302,44 @@ class DhOut : Object{
                         if((validator as DhMatchValidator).in_field(str))
                             return str;
                     }
+                    else if(validator.get_type() == typeof(DhIntArrayValidator))
+                    {
+                        DhIntArrayValidator iav = validator as DhIntArrayValidator;
+                        List<int64?> ret = null;
+                        string[] after_str = str.split(iav.split_str);
+                        bool success = true;
+                        /* get int array */
+                        for(int i = 0 ; i < after_str.length ; i++){
+                            int64 temp;
+                            if(int64.try_parse(after_str[i], out temp))
+                                ret.append(temp);
+                            else{
+                                success = false;
+                                break;
+                            }
+                        }
+                        /* Determine whether in field */
+                        if(success){
+                            if(iav.in_field(ret))
+                                return ret;
+                        }
+                    }
                 } /* Match unsuccess */
+                else return str;
                 print("Unsuccess!\n");
             }
         }
     }
-}
 
+    public Value read_and_output_as_int_custom(DhLineinFunc func, string tip_message, string gettext_package,
+                        DhArgInfo? arg, int64 min, int64 max, bool get_array){
+        DhIntValidator validator = new DhIntValidator(min, max);
+        validator.set_range(min, max);
+        return read_and_output_custom(func, tip_message, gettext_package, arg, validator, get_array);
+    }
+
+    public Value read_and_output_as_int(string tip_message, string gettext_package,
+                        DhArgInfo? arg, int64 min, int64 max, bool get_array){
+        return read_and_output_as_int_custom(stdin.read_line, tip_message, gettext_package, arg, min, max, get_array);
+    }
+}

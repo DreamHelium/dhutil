@@ -18,14 +18,16 @@
 #ifndef DH_STRING_UTIL_H
 #define DH_STRING_UTIL_H
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <glib.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+
 
 #ifdef DH_USE_OLD_INPUT_LINE_FUNC
 

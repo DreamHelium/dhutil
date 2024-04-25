@@ -6,6 +6,8 @@ project(dhutil
 
 include(GNUInstallDirs)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(DHUTIL_VERSION_SO 0)
 
 find_package(Gettext)

@@ -23,7 +23,6 @@ extern "C"{
 #endif
 
 #include <stdio.h>
-#include <cjson/cJSON.h>
 #include <gmodule.h>
 #include <gio/gio.h>
 

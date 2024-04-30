@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <cjson/cJSON.h>
 #include <locale.h>
 #include <errno.h>
 #include <float.h>

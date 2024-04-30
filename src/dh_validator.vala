@@ -252,20 +252,21 @@ class DhOut : Object{
                 return Type.NONE;
             else{
                 if(arg != null){ /* Try to match args */
-                    if(Regex.match_simple("^\\?$", str))
+                    if(Regex.match_simple("^\\?$", remove_blank(str)))
                     {
                         print(arg.help_message(gettext_package));
                         continue;
                     }
                     else
                     {
-                        char ret = arg.match_char(str);
+                        char ret = arg.match_char(remove_blank(str));
                         if(ret != 0)
                             return ret;
                     }
                     /* Match unsuccess */
                 }
                 if(validator != null){ /* Try to match validator */
+                    str = remove_blank(str);
                     if(validator.get_type() == typeof(DhIntValidator))
                     {
                         if(Regex.match_simple("^[\\-|\\+]?[0-9]+$", str))
@@ -341,5 +342,9 @@ class DhOut : Object{
     public Value read_and_output_as_int(string tip_message, string gettext_package,
                         DhArgInfo? arg, int64 min, int64 max, bool get_array){
         return read_and_output_as_int_custom(stdin.read_line, tip_message, gettext_package, arg, min, max, get_array);
+    }
+
+    private string remove_blank(string str){
+        return str.strip();
     }
 }

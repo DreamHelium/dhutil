@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-19 17:33+0800\n"
+"POT-Creation-Date: 2024-05-06 18:45+0800\n"
 "PO-Revision-Date: 2023-09-20 21:41+0800\n"
 "Last-Translator: Dream Helium\n"
 "Language-Team: Chinese <>\n"
@@ -19,44 +19,44 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Lokalize 23.08.1\n"
 
-#: src/dh_string_util.c:181
+#: src/dh_string_util.c:180
 msgid "Unrecognized string, please enter again: "
 msgstr "无法识别的字符，请再输入一次： "
 
-#: src/dh_string_util.c:184
+#: src/dh_string_util.c:183
 msgid "Number out of range, please enter again: "
 msgstr "数字越界，请再输入一次： "
 
-#: src/dh_string_util.c:187
+#: src/dh_string_util.c:186
 msgid "Number out of range of the integer, please enter again: "
 msgstr "数字越界（超过指定位数的限制），请再输入一次： "
 
-#: src/dh_string_util.c:190
+#: src/dh_string_util.c:189
 msgid ""
 "Unrecognized charater afterwards (or in the middle), or couldn't meet the "
 "need of the input. please enter again: "
 msgstr ""
 "在输入的字符其后（或其中）有非法字符或不能满足输入要求，请再输入一次： "
 
-#: src/dh_string_util.c:194
+#: src/dh_string_util.c:193
 msgid ""
 "Out of memory? Maybe you should take some measures to release the memory and "
 "try to enter again: "
 msgstr "内存不足？或许您需考虑采取措施释放内存然后再尝试输入： "
 
-#: src/dh_string_util.c:198
+#: src/dh_string_util.c:197
 msgid "Repeated number! please enter again: "
 msgstr "重复的数字！请再输入一次： "
 
-#: src/dh_string_util.c:201
+#: src/dh_string_util.c:200
 msgid "Error in format of limit, consult the software developer!\n"
 msgstr "格式限制出错！请咨询软件开发者！\n"
 
-#: src/dh_string_util.c:370
+#: src/dh_string_util.c:369
 msgid "Terminated input or unexpected situation!\n"
 msgstr "终止的输入或未预料的情况！\n"
 
-#: src/dh_string_util.c:663
+#: src/dh_string_util.c:662
 #, c-format
 msgid ""
 "An unsuitable range given! Although it's unexpected, the program would still "

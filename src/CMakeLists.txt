@@ -42,7 +42,7 @@ target_include_directories(dhutil
         "${GIO_INCLUDE_DIRS}")
 
 # This library needn't to use cjson
-target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES})
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} readline)
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

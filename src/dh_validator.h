@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 #endif
 #endif
 
-typedef gchar* (*DhLineinFunc) (gpointer user_data);
+typedef gchar* (*DhLineinFunc) (const gchar* prompt, gpointer user_data);
 
 #define TYPE_DH_VALIDATOR (dh_validator_get_type ())
 #define DH_VALIDATOR(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_DH_VALIDATOR, DhValidator))
@@ -184,6 +184,9 @@ struct _DhIntArrayValidatorClass {
 struct _DhArgInfo {
 	GObject parent_instance;
 	DhArgInfoPrivate * priv;
+	GList* arg;
+	GList* arg_fullname;
+	GList* description;
 };
 
 struct _DhArgInfoClass {
@@ -292,6 +295,7 @@ VALA_EXTERN void dh_out_read_and_output_custom (DhOut* self,
                                     DhArgInfo* arg,
                                     DhValidator* validator,
                                     gboolean get_array,
+                                    gboolean use_readline,
                                     GValue* result);
 VALA_EXTERN void dh_out_read_and_output_as_int_custom (DhOut* self,
                                            DhLineinFunc func,
@@ -302,6 +306,7 @@ VALA_EXTERN void dh_out_read_and_output_as_int_custom (DhOut* self,
                                            gint64 min,
                                            gint64 max,
                                            gboolean get_array,
+                                           gboolean use_readline,
                                            GValue* result);
 VALA_EXTERN void dh_out_read_and_output_as_int (DhOut* self,
                                     const gchar* tip_message,

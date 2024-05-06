@@ -1,4 +1,6 @@
-delegate string? DhLineinFunc();
+#!/usr/bin/env -S vala --pkg readline
+
+delegate string? DhLineinFunc(string? prompt);
 
 interface DhValidator <T, V> : GLib.Object{
     public abstract bool in_field(V val);
@@ -192,9 +194,9 @@ class DhIntArrayValidator : Object, DhValidator<List<int64?>?, List<int64?>?>{
 }
 
 class DhArgInfo : Object{
-    List<char> arg;
-    List<string> arg_fullname;
-    List<string> description;
+    public List<char> arg;
+    public List<string> arg_fullname;
+    public List<string> description;
     public void add_arg(char new_arg, string new_arg_fullname, string new_description)
     {
         arg.append(new_arg);
@@ -237,20 +239,73 @@ class DhArgInfo : Object{
 }
 
 class DhOut : Object{
-    public Value read_and_output(string tip_message, string gettext_package,
-                        DhArgInfo? arg, DhValidator? validator, bool get_array){
-        return read_and_output_custom(stdin.read_line, tip_message, gettext_package,
-                                      arg, validator, get_array);
+    private static DhArgInfo info = null;
+
+    private void init_readline(){
+        Readline.readline_name = "dhutil";
+        Readline.attempted_completion_function = dhutil_completion;
     }
 
-    public Value read_and_output_custom(DhLineinFunc func, string tip_message, string gettext_package,
+    private static string[]? dhutil_completion (string str, int a, int b){
+        string[] matches = null;
+        if(a == 0)
+            matches = Readline.completion_matches(str, dhutil_compeuntry_func_static);
+        return matches;
+    }
+
+    private static string? dhutil_compeuntry_func(string str, int state){
+        uint list_index = state;
+        string name;
+
+        if(info != null){
+            while((name = info.arg_fullname.nth_data(list_index)) != null){
+                list_index++;
+                if(name.has_prefix(str))
+                    return name;
+            }
+            list_index -= info.arg.length();
+            if(str.length == 0){
+                string ret;
+                char return_char;
+                while((return_char = info.arg.nth_data(list_index)) != 0){
+                    list_index++;
+                    ret = string.nfill(1, return_char);
+                        return ret;
+                }
+            }
+
+        }
+        return null;
+    }
+
+    private static string? dhutil_compeuntry_func_static(string str, int state){
+        return dhutil_compeuntry_func(str, state);
+    }
+
+    public Value read_and_output(string tip_message, string gettext_package,
                         DhArgInfo? arg, DhValidator? validator, bool get_array){
+        return read_and_output_custom(null, tip_message, gettext_package,
+                                      arg, validator, get_array, true);
+    }
+
+    public Value read_and_output_custom(DhLineinFunc? func, string tip_message, string gettext_package,
+                        DhArgInfo? arg, DhValidator? validator, bool get_array, bool use_readline){
+        init_readline();
         while(true){
-            print(dgettext(gettext_package, tip_message));
-            string str = func();
+            info = arg;
+            string str;
+            if(use_readline){
+                str = Readline.readline(dgettext(gettext_package, tip_message));
+            }
+            else{
+                print(dgettext(gettext_package, tip_message));
+                str = func(null);
+            }
             if(str == null) /* Error occured */
                 return Type.NONE;
             else{
+                if(str[0] != 0)
+                    Readline.History.add(str);
                 if(arg != null){ /* Try to match args */
                     if(Regex.match_simple("^\\?$", remove_blank(str)))
                     {
@@ -332,16 +387,15 @@ class DhOut : Object{
         }
     }
 
-    public Value read_and_output_as_int_custom(DhLineinFunc func, string tip_message, string gettext_package,
-                        DhArgInfo? arg, int64 min, int64 max, bool get_array){
+    public Value read_and_output_as_int_custom(DhLineinFunc? func, string tip_message, string gettext_package,
+                        DhArgInfo? arg, int64 min, int64 max, bool get_array, bool use_readline){
         DhIntValidator validator = new DhIntValidator(min, max);
-        validator.set_range(min, max);
-        return read_and_output_custom(func, tip_message, gettext_package, arg, validator, get_array);
+        return read_and_output_custom(func, tip_message, gettext_package, arg, validator, get_array, use_readline);
     }
 
     public Value read_and_output_as_int(string tip_message, string gettext_package,
                         DhArgInfo? arg, int64 min, int64 max, bool get_array){
-        return read_and_output_as_int_custom(stdin.read_line, tip_message, gettext_package, arg, min, max, get_array);
+        return read_and_output_as_int_custom(null, tip_message, gettext_package, arg, min, max, get_array, true);
     }
 
     private string remove_blank(string str){

@@ -1594,7 +1594,7 @@ dh_arg_info_add_arg (DhArgInfo* self,
 	self->description = g_list_append (self->description, _tmp1_);
 	_tmp3_ = self->arg;
 	if (g_list_length (_tmp3_) == ((guint) 1)) {
-		_tmp2_ = ((gint) self->priv->default_arg) != 0;
+		_tmp2_ = ((gint) self->priv->default_arg) == 0;
 	} else {
 		_tmp2_ = FALSE;
 	}

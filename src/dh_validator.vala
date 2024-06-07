@@ -202,7 +202,7 @@ class DhArgInfo : Object{
         arg.append(new_arg);
         arg_fullname.append(new_arg_fullname);
         description.append(new_description);
-        if(arg.length() == 1 && default_arg != 0)
+        if(arg.length() == 1 && default_arg == 0)
             default_arg = arg.nth_data(0);
     }
     public string help_message(string gettext_package){

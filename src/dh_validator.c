@@ -279,6 +279,10 @@ struct _DhArgInfoClass {
 	GObjectClass parent_class;
 };
 
+struct _DhArgInfoPrivate {
+	gchar default_arg;
+};
+
 struct _DhOut {
 	GObject parent_instance;
 	DhOutPrivate * priv;
@@ -306,6 +310,7 @@ static DhValidatorIface * dh_match_validator_dh_validator_parent_iface = NULL;
 static gint DhIntArrayValidator_private_offset;
 static gpointer dh_int_array_validator_parent_class = NULL;
 static DhValidatorIface * dh_int_array_validator_dh_validator_parent_iface = NULL;
+static gint DhArgInfo_private_offset;
 static gpointer dh_arg_info_parent_class = NULL;
 static gpointer dh_out_parent_class = NULL;
 static DhArgInfo* dh_out_info;
@@ -431,6 +436,8 @@ VALA_EXTERN gchar* dh_arg_info_help_message (DhArgInfo* self,
                                  const gchar* gettext_package);
 VALA_EXTERN gchar dh_arg_info_match_char (DhArgInfo* self,
                               const gchar* str);
+VALA_EXTERN void dh_arg_info_change_default_arg (DhArgInfo* self,
+                                     gchar arg);
 VALA_EXTERN DhArgInfo* dh_arg_info_new (void);
 VALA_EXTERN DhArgInfo* dh_arg_info_construct (GType object_type);
 static void dh_arg_info_finalize (GObject * obj);
@@ -1561,6 +1568,12 @@ dh_int_array_validator_get_type (void)
 	return dh_int_array_validator_type_id__once;
 }
 
+static inline gpointer
+dh_arg_info_get_instance_private (DhArgInfo* self)
+{
+	return G_STRUCT_MEMBER_P (self, DhArgInfo_private_offset);
+}
+
 void
 dh_arg_info_add_arg (DhArgInfo* self,
                      gchar new_arg,
@@ -1569,6 +1582,8 @@ dh_arg_info_add_arg (DhArgInfo* self,
 {
 	gchar* _tmp0_;
 	gchar* _tmp1_;
+	gboolean _tmp2_ = FALSE;
+	GList* _tmp3_;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (new_arg_fullname != NULL);
 	g_return_if_fail (new_description != NULL);
@@ -1577,6 +1592,19 @@ dh_arg_info_add_arg (DhArgInfo* self,
 	self->arg_fullname = g_list_append (self->arg_fullname, _tmp0_);
 	_tmp1_ = g_strdup (new_description);
 	self->description = g_list_append (self->description, _tmp1_);
+	_tmp3_ = self->arg;
+	if (g_list_length (_tmp3_) == ((guint) 1)) {
+		_tmp2_ = ((gint) self->priv->default_arg) != 0;
+	} else {
+		_tmp2_ = FALSE;
+	}
+	if (_tmp2_) {
+		GList* _tmp4_;
+		gconstpointer _tmp5_;
+		_tmp4_ = self->arg;
+		_tmp5_ = g_list_nth_data (_tmp4_, (guint) 0);
+		self->priv->default_arg = (gchar) ((gintptr) _tmp5_);
+	}
 }
 
 gchar*
@@ -1598,29 +1626,19 @@ dh_arg_info_help_message (DhArgInfo* self,
 			_tmp1_ = TRUE;
 			while (TRUE) {
 				GList* _tmp3_;
-				const gchar* _tmp4_;
-				gchar* _tmp5_;
-				gchar* temp_str = NULL;
+				gchar* printf_str = NULL;
+				gchar* _tmp4_;
+				const gchar* _tmp5_;
 				GList* _tmp6_;
 				gconstpointer _tmp7_;
-				gchar* _tmp8_;
-				const gchar* _tmp9_;
-				const gchar* _tmp10_;
-				gchar* _tmp11_;
-				const gchar* _tmp12_;
-				gchar* _tmp13_;
+				GList* _tmp8_;
+				gconstpointer _tmp9_;
+				GList* _tmp10_;
+				gconstpointer _tmp11_;
+				gchar* _tmp12_;
+				const gchar* _tmp13_;
 				const gchar* _tmp14_;
-				GList* _tmp15_;
-				gconstpointer _tmp16_;
-				gchar* _tmp17_;
-				const gchar* _tmp18_;
-				gchar* _tmp19_;
-				const gchar* _tmp20_;
-				GList* _tmp21_;
-				gconstpointer _tmp22_;
-				gchar* _tmp23_;
-				const gchar* _tmp24_;
-				gchar* _tmp25_;
+				gchar* _tmp15_;
 				if (!_tmp1_) {
 					gint _tmp2_;
 					_tmp2_ = i;
@@ -1631,44 +1649,24 @@ dh_arg_info_help_message (DhArgInfo* self,
 				if (!(((guint) i) < g_list_length (_tmp3_))) {
 					break;
 				}
-				_tmp4_ = str;
-				_tmp5_ = g_strconcat (_tmp4_, "\"", NULL);
-				_g_free0 (str);
-				str = _tmp5_;
+				_tmp4_ = g_strdup ("\"%c\", \"%s\", \"%s\"\n");
+				printf_str = _tmp4_;
+				_tmp5_ = printf_str;
 				_tmp6_ = self->arg;
 				_tmp7_ = g_list_nth_data (_tmp6_, (guint) i);
-				_tmp8_ = g_strnfill ((gsize) 1, (gchar) ((gintptr) _tmp7_));
-				temp_str = _tmp8_;
-				_tmp9_ = str;
-				_tmp10_ = temp_str;
-				_tmp11_ = g_strconcat (_tmp9_, _tmp10_, NULL);
+				_tmp8_ = self->arg_fullname;
+				_tmp9_ = g_list_nth_data (_tmp8_, (guint) i);
+				_tmp10_ = self->description;
+				_tmp11_ = g_list_nth_data (_tmp10_, (guint) i);
+				_tmp12_ = g_strdup_printf (_tmp5_, (gchar) ((gintptr) _tmp7_), (const gchar*) _tmp9_, g_dgettext (gettext_package, (const gchar*) _tmp11_));
+				_g_free0 (printf_str);
+				printf_str = _tmp12_;
+				_tmp13_ = str;
+				_tmp14_ = printf_str;
+				_tmp15_ = g_strconcat (_tmp13_, _tmp14_, NULL);
 				_g_free0 (str);
-				str = _tmp11_;
-				_tmp12_ = str;
-				_tmp13_ = g_strconcat (_tmp12_, "\", \"", NULL);
-				_g_free0 (str);
-				str = _tmp13_;
-				_tmp14_ = str;
-				_tmp15_ = self->arg_fullname;
-				_tmp16_ = g_list_nth_data (_tmp15_, (guint) i);
-				_tmp17_ = g_strconcat (_tmp14_, (const gchar*) _tmp16_, NULL);
-				_g_free0 (str);
-				str = _tmp17_;
-				_tmp18_ = str;
-				_tmp19_ = g_strconcat (_tmp18_, "\", \"", NULL);
-				_g_free0 (str);
-				str = _tmp19_;
-				_tmp20_ = str;
-				_tmp21_ = self->description;
-				_tmp22_ = g_list_nth_data (_tmp21_, (guint) i);
-				_tmp23_ = g_strconcat (_tmp20_, g_dgettext (gettext_package, (const gchar*) _tmp22_), NULL);
-				_g_free0 (str);
-				str = _tmp23_;
-				_tmp24_ = str;
-				_tmp25_ = g_strconcat (_tmp24_, "\"\n", NULL);
-				_g_free0 (str);
-				str = _tmp25_;
-				_g_free0 (temp_str);
+				str = _tmp15_;
+				_g_free0 (printf_str);
 			}
 		}
 	}
@@ -1768,17 +1766,21 @@ dh_arg_info_match_char (DhArgInfo* self,
 	}
 	_tmp22_ = pstr;
 	if (g_strcmp0 (_tmp22_, "") == 0) {
-		GList* _tmp23_;
-		gconstpointer _tmp24_;
-		_tmp23_ = self->arg;
-		_tmp24_ = g_list_nth_data (_tmp23_, (guint) 0);
-		result = (gchar) ((gintptr) _tmp24_);
+		result = self->priv->default_arg;
 		_g_free0 (pstr);
 		return result;
 	}
 	result = (gchar) 0;
 	_g_free0 (pstr);
 	return result;
+}
+
+void
+dh_arg_info_change_default_arg (DhArgInfo* self,
+                                gchar arg)
+{
+	g_return_if_fail (self != NULL);
+	self->priv->default_arg = arg;
 }
 
 DhArgInfo*
@@ -1800,6 +1802,7 @@ dh_arg_info_class_init (DhArgInfoClass * klass,
                         gpointer klass_data)
 {
 	dh_arg_info_parent_class = g_type_class_peek_parent (klass);
+	g_type_class_adjust_private_offset (klass, &DhArgInfo_private_offset);
 	G_OBJECT_CLASS (klass)->finalize = dh_arg_info_finalize;
 }
 
@@ -1807,6 +1810,8 @@ static void
 dh_arg_info_instance_init (DhArgInfo * self,
                            gpointer klass)
 {
+	self->priv = dh_arg_info_get_instance_private (self);
+	self->priv->default_arg = (gchar) 0;
 }
 
 static void
@@ -1826,6 +1831,7 @@ dh_arg_info_get_type_once (void)
 	static const GTypeInfo g_define_type_info = { sizeof (DhArgInfoClass), (GBaseInitFunc) NULL, (GBaseFinalizeFunc) NULL, (GClassInitFunc) dh_arg_info_class_init, (GClassFinalizeFunc) NULL, NULL, sizeof (DhArgInfo), 0, (GInstanceInitFunc) dh_arg_info_instance_init, NULL };
 	GType dh_arg_info_type_id;
 	dh_arg_info_type_id = g_type_register_static (G_TYPE_OBJECT, "DhArgInfo", &g_define_type_info, 0);
+	DhArgInfo_private_offset = g_type_add_instance_private (dh_arg_info_type_id, sizeof (DhArgInfoPrivate));
 	return dh_arg_info_type_id;
 }
 
@@ -2253,150 +2259,190 @@ dh_out_read_and_output_custom (DhOut* self,
 				_g_free0 (str);
 				str = _tmp19_;
 				if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_INT_VALIDATOR) {
-					const gchar* _tmp20_;
-					_tmp20_ = str;
-					if (g_regex_match_simple ("^[\\-|\\+]?[0-9]+$", _tmp20_, 0, 0)) {
+					DhIntValidator* int_validator = NULL;
+					DhIntValidator* _tmp20_;
+					const gchar* _tmp21_;
+					_tmp20_ = _g_object_ref0 (IS_DH_INT_VALIDATOR (validator) ? ((DhIntValidator*) validator) : NULL);
+					int_validator = _tmp20_;
+					_tmp21_ = str;
+					if (g_regex_match_simple ("^[\\-|\\+]?[0-9]+$", _tmp21_, 0, 0)) {
 						gint64 ret = 0LL;
-						const gchar* _tmp21_;
-						_tmp21_ = str;
-						ret = int64_parse (_tmp21_, (guint) 10);
-						if (dh_validator_in_field ((DhValidator*) (IS_DH_INT_VALIDATOR (validator) ? ((DhIntValidator*) validator) : NULL), &ret)) {
-							GValue _tmp22_ = {0};
-							g_value_init (&_tmp22_, G_TYPE_INT64);
-							g_value_set_int64 (&_tmp22_, ret);
-							*result = _tmp22_;
+						const gchar* _tmp22_;
+						DhIntValidator* _tmp23_;
+						_tmp22_ = str;
+						ret = int64_parse (_tmp22_, (guint) 10);
+						_tmp23_ = int_validator;
+						if (dh_validator_in_field ((DhValidator*) _tmp23_, &ret)) {
+							GValue _tmp24_ = {0};
+							g_value_init (&_tmp24_, G_TYPE_INT64);
+							g_value_set_int64 (&_tmp24_, ret);
+							*result = _tmp24_;
+							_g_object_unref0 (int_validator);
 							_g_free0 (str);
 							return;
 						}
 					}
+					_g_object_unref0 (int_validator);
 				} else {
 					if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_UINT_VALIDATOR) {
-						const gchar* _tmp23_;
-						_tmp23_ = str;
-						if (g_regex_match_simple ("^[\\+]?[0-9]+$", _tmp23_, 0, 0)) {
+						DhUIntValidator* uint_validator = NULL;
+						DhUIntValidator* _tmp25_;
+						const gchar* _tmp26_;
+						_tmp25_ = _g_object_ref0 (IS_DH_UINT_VALIDATOR (validator) ? ((DhUIntValidator*) validator) : NULL);
+						uint_validator = _tmp25_;
+						_tmp26_ = str;
+						if (g_regex_match_simple ("^[\\+]?[0-9]+$", _tmp26_, 0, 0)) {
 							guint64 ret = 0ULL;
-							const gchar* _tmp24_;
-							_tmp24_ = str;
-							ret = uint64_parse (_tmp24_, (guint) 10);
-							if (dh_validator_in_field ((DhValidator*) (IS_DH_UINT_VALIDATOR (validator) ? ((DhUIntValidator*) validator) : NULL), &ret)) {
-								GValue _tmp25_ = {0};
-								g_value_init (&_tmp25_, G_TYPE_UINT64);
-								g_value_set_uint64 (&_tmp25_, ret);
-								*result = _tmp25_;
+							const gchar* _tmp27_;
+							DhUIntValidator* _tmp28_;
+							_tmp27_ = str;
+							ret = uint64_parse (_tmp27_, (guint) 10);
+							_tmp28_ = uint_validator;
+							if (dh_validator_in_field ((DhValidator*) _tmp28_, &ret)) {
+								GValue _tmp29_ = {0};
+								g_value_init (&_tmp29_, G_TYPE_UINT64);
+								g_value_set_uint64 (&_tmp29_, ret);
+								*result = _tmp29_;
+								_g_object_unref0 (uint_validator);
 								_g_free0 (str);
 								return;
 							}
 						}
+						_g_object_unref0 (uint_validator);
 					} else {
 						if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_DOUBLE_VALIDATOR) {
+							DhDoubleValidator* double_validator = NULL;
+							DhDoubleValidator* _tmp30_;
 							gchar* end_str = NULL;
 							gdouble ret = 0.0;
-							const gchar* _tmp26_;
-							const gchar* _tmp27_ = NULL;
-							gdouble _tmp28_;
-							gchar* _tmp29_;
-							const gchar* _tmp30_;
-							_tmp26_ = str;
-							_tmp28_ = g_ascii_strtod (_tmp26_, &_tmp27_);
+							const gchar* _tmp31_;
+							const gchar* _tmp32_ = NULL;
+							gdouble _tmp33_;
+							gchar* _tmp34_;
+							const gchar* _tmp35_;
+							_tmp30_ = _g_object_ref0 (IS_DH_DOUBLE_VALIDATOR (validator) ? ((DhDoubleValidator*) validator) : NULL);
+							double_validator = _tmp30_;
+							_tmp31_ = str;
+							_tmp33_ = g_ascii_strtod (_tmp31_, &_tmp32_);
 							_g_free0 (end_str);
-							_tmp29_ = g_strdup (_tmp27_);
-							end_str = _tmp29_;
-							ret = _tmp28_;
-							_tmp30_ = end_str;
-							if (g_strcmp0 (_tmp30_, "") == 0) {
-								if (dh_validator_in_field ((DhValidator*) (IS_DH_DOUBLE_VALIDATOR (validator) ? ((DhDoubleValidator*) validator) : NULL), &ret)) {
-									GValue _tmp31_ = {0};
-									g_value_init (&_tmp31_, G_TYPE_DOUBLE);
-									g_value_set_double (&_tmp31_, ret);
-									*result = _tmp31_;
+							_tmp34_ = g_strdup (_tmp32_);
+							end_str = _tmp34_;
+							ret = _tmp33_;
+							_tmp35_ = end_str;
+							if (g_strcmp0 (_tmp35_, "") == 0) {
+								DhDoubleValidator* _tmp36_;
+								_tmp36_ = double_validator;
+								if (dh_validator_in_field ((DhValidator*) _tmp36_, &ret)) {
+									GValue _tmp37_ = {0};
+									g_value_init (&_tmp37_, G_TYPE_DOUBLE);
+									g_value_set_double (&_tmp37_, ret);
+									*result = _tmp37_;
 									_g_free0 (end_str);
+									_g_object_unref0 (double_validator);
 									_g_free0 (str);
 									return;
 								}
 							}
 							_g_free0 (end_str);
+							_g_object_unref0 (double_validator);
 						} else {
 							if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_REGEX_VALIDATOR) {
-								const gchar* _tmp32_;
-								_tmp32_ = str;
-								if (dh_validator_in_field ((DhValidator*) (IS_DH_REGEX_VALIDATOR (validator) ? ((DhRegexValidator*) validator) : NULL), _tmp32_)) {
-									GValue _tmp33_ = {0};
-									g_value_init (&_tmp33_, G_TYPE_STRING);
-									g_value_take_string (&_tmp33_, str);
-									*result = _tmp33_;
+								DhRegexValidator* regex_validator = NULL;
+								DhRegexValidator* _tmp38_;
+								DhRegexValidator* _tmp39_;
+								const gchar* _tmp40_;
+								_tmp38_ = _g_object_ref0 (IS_DH_REGEX_VALIDATOR (validator) ? ((DhRegexValidator*) validator) : NULL);
+								regex_validator = _tmp38_;
+								_tmp39_ = regex_validator;
+								_tmp40_ = str;
+								if (dh_validator_in_field ((DhValidator*) _tmp39_, _tmp40_)) {
+									GValue _tmp41_ = {0};
+									g_value_init (&_tmp41_, G_TYPE_STRING);
+									g_value_take_string (&_tmp41_, str);
+									*result = _tmp41_;
+									_g_object_unref0 (regex_validator);
 									return;
 								}
+								_g_object_unref0 (regex_validator);
 							} else {
 								if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_MATCH_VALIDATOR) {
-									const gchar* _tmp34_;
-									_tmp34_ = str;
-									if (dh_validator_in_field ((DhValidator*) (IS_DH_MATCH_VALIDATOR (validator) ? ((DhMatchValidator*) validator) : NULL), _tmp34_)) {
-										GValue _tmp35_ = {0};
-										g_value_init (&_tmp35_, G_TYPE_STRING);
-										g_value_take_string (&_tmp35_, str);
-										*result = _tmp35_;
+									DhMatchValidator* match_validator = NULL;
+									DhMatchValidator* _tmp42_;
+									DhMatchValidator* _tmp43_;
+									const gchar* _tmp44_;
+									_tmp42_ = _g_object_ref0 (IS_DH_MATCH_VALIDATOR (validator) ? ((DhMatchValidator*) validator) : NULL);
+									match_validator = _tmp42_;
+									_tmp43_ = match_validator;
+									_tmp44_ = str;
+									if (dh_validator_in_field ((DhValidator*) _tmp43_, _tmp44_)) {
+										GValue _tmp45_ = {0};
+										g_value_init (&_tmp45_, G_TYPE_STRING);
+										g_value_take_string (&_tmp45_, str);
+										*result = _tmp45_;
+										_g_object_unref0 (match_validator);
 										return;
 									}
+									_g_object_unref0 (match_validator);
 								} else {
 									if (G_TYPE_FROM_INSTANCE ((GObject*) validator) == TYPE_DH_INT_ARRAY_VALIDATOR) {
 										DhIntArrayValidator* iav = NULL;
-										DhIntArrayValidator* _tmp36_;
+										DhIntArrayValidator* _tmp46_;
 										GList* ret = NULL;
 										gchar** after_str = NULL;
-										const gchar* _tmp37_;
-										DhIntArrayValidator* _tmp38_;
-										const gchar* _tmp39_;
-										gchar** _tmp40_;
-										gchar** _tmp41_;
+										const gchar* _tmp47_;
+										DhIntArrayValidator* _tmp48_;
+										const gchar* _tmp49_;
+										gchar** _tmp50_;
+										gchar** _tmp51_;
 										gint after_str_length1;
 										gint _after_str_size_;
 										gboolean success = FALSE;
-										_tmp36_ = _g_object_ref0 (IS_DH_INT_ARRAY_VALIDATOR (validator) ? ((DhIntArrayValidator*) validator) : NULL);
-										iav = _tmp36_;
+										_tmp46_ = _g_object_ref0 (IS_DH_INT_ARRAY_VALIDATOR (validator) ? ((DhIntArrayValidator*) validator) : NULL);
+										iav = _tmp46_;
 										ret = NULL;
-										_tmp37_ = str;
-										_tmp38_ = iav;
-										_tmp39_ = _tmp38_->split_str;
-										_tmp41_ = _tmp40_ = g_strsplit (_tmp37_, _tmp39_, 0);
-										after_str = _tmp41_;
-										after_str_length1 = _vala_array_length (_tmp40_);
+										_tmp47_ = str;
+										_tmp48_ = iav;
+										_tmp49_ = _tmp48_->split_str;
+										_tmp51_ = _tmp50_ = g_strsplit (_tmp47_, _tmp49_, 0);
+										after_str = _tmp51_;
+										after_str_length1 = _vala_array_length (_tmp50_);
 										_after_str_size_ = after_str_length1;
 										success = TRUE;
 										{
 											gint i = 0;
 											i = 0;
 											{
-												gboolean _tmp42_ = FALSE;
-												_tmp42_ = TRUE;
+												gboolean _tmp52_ = FALSE;
+												_tmp52_ = TRUE;
 												while (TRUE) {
-													gchar** _tmp44_;
-													gint _tmp44__length1;
+													gchar** _tmp54_;
+													gint _tmp54__length1;
 													gint64 temp = 0LL;
-													gchar** _tmp45_;
-													gint _tmp45__length1;
-													const gchar* _tmp46_;
-													gint64 _tmp47_ = 0LL;
-													gboolean _tmp48_;
-													if (!_tmp42_) {
-														gint _tmp43_;
-														_tmp43_ = i;
-														i = _tmp43_ + 1;
+													gchar** _tmp55_;
+													gint _tmp55__length1;
+													const gchar* _tmp56_;
+													gint64 _tmp57_ = 0LL;
+													gboolean _tmp58_;
+													if (!_tmp52_) {
+														gint _tmp53_;
+														_tmp53_ = i;
+														i = _tmp53_ + 1;
 													}
-													_tmp42_ = FALSE;
-													_tmp44_ = after_str;
-													_tmp44__length1 = after_str_length1;
-													if (!(i < _tmp44__length1)) {
+													_tmp52_ = FALSE;
+													_tmp54_ = after_str;
+													_tmp54__length1 = after_str_length1;
+													if (!(i < _tmp54__length1)) {
 														break;
 													}
-													_tmp45_ = after_str;
-													_tmp45__length1 = after_str_length1;
-													_tmp46_ = _tmp45_[i];
-													_tmp48_ = int64_try_parse (_tmp46_, &_tmp47_, NULL, (guint) 0);
-													temp = _tmp47_;
-													if (_tmp48_) {
-														gint64* _tmp49_;
-														_tmp49_ = __int64_dup0 (&temp);
-														ret = g_list_append (ret, _tmp49_);
+													_tmp55_ = after_str;
+													_tmp55__length1 = after_str_length1;
+													_tmp56_ = _tmp55_[i];
+													_tmp58_ = int64_try_parse (_tmp56_, &_tmp57_, NULL, (guint) 0);
+													temp = _tmp57_;
+													if (_tmp58_) {
+														gint64* _tmp59_;
+														_tmp59_ = __int64_dup0 (&temp);
+														ret = g_list_append (ret, _tmp59_);
 													} else {
 														success = FALSE;
 														break;
@@ -2405,15 +2451,15 @@ dh_out_read_and_output_custom (DhOut* self,
 											}
 										}
 										if (success) {
-											DhIntArrayValidator* _tmp50_;
-											GList* _tmp51_;
-											_tmp50_ = iav;
-											_tmp51_ = ret;
-											if (dh_validator_in_field ((DhValidator*) _tmp50_, _tmp51_)) {
-												GValue _tmp52_ = {0};
-												g_value_init (&_tmp52_, G_TYPE_POINTER);
-												g_value_set_pointer (&_tmp52_, ret);
-												*result = _tmp52_;
+											DhIntArrayValidator* _tmp60_;
+											GList* _tmp61_;
+											_tmp60_ = iav;
+											_tmp61_ = ret;
+											if (dh_validator_in_field ((DhValidator*) _tmp60_, _tmp61_)) {
+												GValue _tmp62_ = {0};
+												g_value_init (&_tmp62_, G_TYPE_POINTER);
+												g_value_set_pointer (&_tmp62_, ret);
+												*result = _tmp62_;
 												after_str = (_vala_array_free (after_str, after_str_length1, (GDestroyNotify) g_free), NULL);
 												_g_object_unref0 (iav);
 												_g_free0 (str);
@@ -2430,10 +2476,10 @@ dh_out_read_and_output_custom (DhOut* self,
 					}
 				}
 			} else {
-				GValue _tmp53_ = {0};
-				g_value_init (&_tmp53_, G_TYPE_STRING);
-				g_value_take_string (&_tmp53_, str);
-				*result = _tmp53_;
+				GValue _tmp63_ = {0};
+				g_value_init (&_tmp63_, G_TYPE_STRING);
+				g_value_take_string (&_tmp63_, str);
+				*result = _tmp63_;
 				return;
 			}
 			g_print ("Unsuccess!\n");

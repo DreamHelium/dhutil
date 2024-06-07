@@ -276,6 +276,8 @@ VALA_EXTERN gchar* dh_arg_info_help_message (DhArgInfo* self,
                                  const gchar* gettext_package);
 VALA_EXTERN gchar dh_arg_info_match_char (DhArgInfo* self,
                               const gchar* str);
+VALA_EXTERN void dh_arg_info_change_default_arg (DhArgInfo* self,
+                                     gchar arg);
 VALA_EXTERN DhArgInfo* dh_arg_info_new (void);
 VALA_EXTERN DhArgInfo* dh_arg_info_construct (GType object_type);
 VALA_EXTERN GType dh_out_get_type (void) G_GNUC_CONST ;

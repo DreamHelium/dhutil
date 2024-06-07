@@ -197,29 +197,24 @@ class DhArgInfo : Object{
     public List<char> arg;
     public List<string> arg_fullname;
     public List<string> description;
-    public void add_arg(char new_arg, string new_arg_fullname, string new_description)
-    {
+    char default_arg = 0;
+    public void add_arg(char new_arg, string new_arg_fullname, string new_description){
         arg.append(new_arg);
         arg_fullname.append(new_arg_fullname);
         description.append(new_description);
+        if(arg.length() == 1 && default_arg != 0)
+            default_arg = arg.nth_data(0);
     }
-    public string help_message(string gettext_package)
-    {
+    public string help_message(string gettext_package){
         string str = dgettext("dhutil" ,"The arguments are:\n");
         for(int i = 0 ; i < arg.length() ; i++){
-            str += "\"";
-            string temp_str = string.nfill(1, arg.nth_data(i));
-            str += temp_str;
-            str += "\", \"";
-            str += arg_fullname.nth_data(i);
-            str += "\", \"";
-            str += dgettext(gettext_package, description.nth_data(i));
-            str += "\"\n";
+            string printf_str = "\"%c\", \"%s\", \"%s\"\n";
+            printf_str = printf_str.printf(arg.nth_data(i), arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
+            str += printf_str;
         }
         return str;
     }
-    public char match_char(string str)
-    {
+    public char match_char(string str){
         string pstr = str.ascii_down();
         for(int i = 0 ; i < arg.length() ; i++)
         {
@@ -233,8 +228,11 @@ class DhArgInfo : Object{
                 return arg.nth_data(i);
         }
         if(pstr == "")
-            return arg.nth_data(0);
+            return default_arg;
         return 0;
+    }
+    public void change_default_arg(char arg){
+        this.default_arg = arg;
     }
 }
 
@@ -324,38 +322,43 @@ class DhOut : Object{
                     str = remove_blank(str);
                     if(validator.get_type() == typeof(DhIntValidator))
                     {
+                        DhIntValidator int_validator = validator as DhIntValidator;
                         if(Regex.match_simple("^[\\-|\\+]?[0-9]+$", str))
                         {
                             int64 ret = int64.parse(str, 10);
-                            if((validator as DhIntValidator).in_field(ret))
+                            if(int_validator.in_field(ret))
                                 return ret;
                         }
                     }
                     else if(validator.get_type() == typeof(DhUIntValidator))
                     {
+                        DhUIntValidator uint_validator = validator as DhUIntValidator;
                         if(Regex.match_simple("^[\\+]?[0-9]+$", str))
                         {
                             uint64 ret = uint64.parse(str, 10);
-                            if((validator as DhUIntValidator).in_field(ret))
+                            if(uint_validator.in_field(ret))
                                 return ret;
                         }
                     }
                     else if(validator.get_type() == typeof(DhDoubleValidator))
                     {
+                        DhDoubleValidator double_validator = validator as DhDoubleValidator;
                         string end_str;
                         double ret = str.to_double(out end_str);
                         if(end_str == "")
-                            if((validator as DhDoubleValidator).in_field(ret))
+                            if(double_validator.in_field(ret))
                                 return ret;
                     }
                     else if(validator.get_type() == typeof(DhRegexValidator))
                     {
-                        if((validator as DhRegexValidator).in_field(str))
+                        DhRegexValidator regex_validator = validator as DhRegexValidator;
+                        if(regex_validator.in_field(str))
                             return str;
                     }
                     else if(validator.get_type() == typeof(DhMatchValidator))
                     {
-                        if((validator as DhMatchValidator).in_field(str))
+                        DhMatchValidator match_validator = validator as DhMatchValidator;
+                        if(match_validator.in_field(str))
                             return str;
                     }
                     else if(validator.get_type() == typeof(DhIntArrayValidator))

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S vala --pkg readline
+#!/usr/bin/env -S vala --internal-header dh_validator.h --pkg readline -C
 
 delegate string? DhLineinFunc(string? prompt);
 
@@ -208,9 +208,16 @@ class DhArgInfo : Object{
     public string help_message(string gettext_package){
         string str = dgettext("dhutil" ,"The arguments are:\n");
         for(int i = 0 ; i < arg.length() ; i++){
-            string printf_str = "\"%c\", \"%s\", \"%s\"\n";
-            printf_str = printf_str.printf(arg.nth_data(i), arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
-            str += printf_str;
+            if(arg.nth_data(0) != 0){
+                string printf_str = "\"%c\", \"%s\", \"%s\"\n";
+                printf_str = printf_str.printf(arg.nth_data(i), arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
+                str += printf_str;
+            }
+            else{
+                string printf_str = "\"\", \"%s\", \"%s\"\n";
+                printf_str = printf_str.printf(arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
+                str += printf_str;
+            }
         }
         return str;
     }
@@ -220,7 +227,7 @@ class DhArgInfo : Object{
         {
             string match_str = "^%c$";
             match_str = match_str.printf(arg.nth_data(i));
-            if(Regex.match_simple(match_str, pstr))
+            if(Regex.match_simple(match_str, pstr) && match_str != "^$")
                 return arg.nth_data(i);
             match_str = "^%s$";
             match_str = match_str.printf(arg_fullname.nth_data(i));
@@ -231,6 +238,23 @@ class DhArgInfo : Object{
             return default_arg;
         return 0;
     }
+    public string? match_string(string str){
+        string pstr = str.ascii_down();
+        for(int i = 0 ; i < arg.length() ; i++)
+        {
+            string match_str = "^%c$";
+            match_str = match_str.printf(arg.nth_data(i));
+            if(Regex.match_simple(match_str, pstr) && match_str != "^$")
+                return arg_fullname.nth_data(i);
+            match_str = "^%s$";
+            match_str = match_str.printf(arg_fullname.nth_data(i));
+            if(Regex.match_simple(match_str, pstr))
+                return arg_fullname.nth_data(i);
+        }
+        if(pstr == "")
+            return arg_fullname.nth_data(0);
+        return null;
+    }
     public void change_default_arg(char arg){
         this.default_arg = arg;
     }
@@ -238,6 +262,7 @@ class DhArgInfo : Object{
 
 class DhOut : Object{
     private static DhArgInfo info = null;
+    private bool match_string = false;
 
     private void init_readline(){
         Readline.readline_name = "dhutil";
@@ -249,6 +274,10 @@ class DhOut : Object{
         if(a == 0)
             matches = Readline.completion_matches(str, dhutil_compeuntry_func_static);
         return matches;
+    }
+
+    public void output_match_string_than_arg(){
+        match_string = true;
     }
 
     private static string? dhutil_compeuntry_func(string str, int state){
@@ -305,16 +334,21 @@ class DhOut : Object{
                 if(str[0] != 0)
                     Readline.History.add(str);
                 if(arg != null){ /* Try to match args */
-                    if(Regex.match_simple("^\\?$", remove_blank(str)))
-                    {
+                    if(Regex.match_simple("^\\?$", remove_blank(str))){
                         print(arg.help_message(gettext_package));
                         continue;
                     }
-                    else
-                    {
+                    else{
+                        if(match_string){
+                            string? ret = arg.match_string(remove_blank(str));
+                            if(ret != null)
+                                return ret;
+                        }
+                        else {
                         char ret = arg.match_char(remove_blank(str));
                         if(ret != 0)
                             return ret;
+                        }
                     }
                     /* Match unsuccess */
                 }

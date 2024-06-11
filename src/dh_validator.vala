@@ -209,12 +209,12 @@ class DhArgInfo : Object{
         string str = dgettext("dhutil" ,"The arguments are:\n");
         for(int i = 0 ; i < arg.length() ; i++){
             if(arg.nth_data(0) != 0){
-                string printf_str = "\"%c\", \"%s\", \"%s\"\n";
+                string printf_str = "\"%c\", \t\"%s\", \t\"%s\"\n";
                 printf_str = printf_str.printf(arg.nth_data(i), arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
                 str += printf_str;
             }
             else{
-                string printf_str = "\"\", \"%s\", \"%s\"\n";
+                string printf_str = "\"\", \t\"%s\", \t\"%s\"\n";
                 printf_str = printf_str.printf(arg_fullname.nth_data(i), dgettext(gettext_package, description.nth_data(i)));
                 str += printf_str;
             }
@@ -239,13 +239,16 @@ class DhArgInfo : Object{
         return 0;
     }
     public string? match_string(string str){
-        string pstr = str.ascii_down();
+        string pstr = str;
         for(int i = 0 ; i < arg.length() ; i++)
         {
-            string match_str = "^%c$";
-            match_str = match_str.printf(arg.nth_data(i));
-            if(Regex.match_simple(match_str, pstr) && match_str != "^$")
-                return arg_fullname.nth_data(i);
+            string match_str = null;
+            if(arg.nth_data(i) != 0){
+                match_str = "^%c$";
+                match_str = match_str.printf(arg.nth_data(i));
+                if(Regex.match_simple(match_str, pstr) && match_str != "^$")
+                    return arg_fullname.nth_data(i);
+            }
             match_str = "^%s$";
             match_str = match_str.printf(arg_fullname.nth_data(i));
             if(Regex.match_simple(match_str, pstr))
@@ -263,10 +266,15 @@ class DhArgInfo : Object{
 class DhOut : Object{
     private static DhArgInfo info = null;
     private bool match_string = false;
+    private bool output_str_while_nov = true;
 
     private void init_readline(){
         Readline.readline_name = "dhutil";
         Readline.attempted_completion_function = dhutil_completion;
+    }
+
+    public void no_output_string_while_no_validator(){
+        output_str_while_nov = false;
     }
 
     private static string[]? dhutil_completion (string str, int a, int b){
@@ -418,7 +426,7 @@ class DhOut : Object{
                         }
                     }
                 } /* Match unsuccess */
-                else return str;
+                else if(output_str_while_nov) return str;
                 print("Unsuccess!\n");
             }
         }

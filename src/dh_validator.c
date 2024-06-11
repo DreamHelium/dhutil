@@ -294,6 +294,7 @@ struct _DhOutClass {
 
 struct _DhOutPrivate {
 	gboolean match_string;
+	gboolean output_str_while_nov;
 };
 
 static gint DhIntValidator_private_offset;
@@ -459,6 +460,7 @@ static gchar** dh_out_dhutil_completion (const gchar* str,
 static gchar** _dh_out_dhutil_completion_rl_completion_func_t (const gchar* str,
                                                         gint a,
                                                         gint b);
+VALA_EXTERN void dh_out_no_output_string_while_no_validator (DhOut* self);
 static gchar* dh_out_dhutil_compeuntry_func_static (const gchar* str,
                                              gint state);
 static gchar* _dh_out_dhutil_compeuntry_func_static_rl_compentry_func_t (const gchar* str,
@@ -1662,7 +1664,7 @@ dh_arg_info_help_message (DhArgInfo* self,
 					const gchar* _tmp15_;
 					const gchar* _tmp16_;
 					gchar* _tmp17_;
-					_tmp6_ = g_strdup ("\"%c\", \"%s\", \"%s\"\n");
+					_tmp6_ = g_strdup ("\"%c\", \t\"%s\", \t\"%s\"\n");
 					printf_str = _tmp6_;
 					_tmp7_ = printf_str;
 					_tmp8_ = self->arg;
@@ -1692,7 +1694,7 @@ dh_arg_info_help_message (DhArgInfo* self,
 					const gchar* _tmp25_;
 					const gchar* _tmp26_;
 					gchar* _tmp27_;
-					_tmp18_ = g_strdup ("\"\", \"%s\", \"%s\"\n");
+					_tmp18_ = g_strdup ("\"\", \t\"%s\", \t\"%s\"\n");
 					printf_str = _tmp18_;
 					_tmp19_ = printf_str;
 					_tmp20_ = self->arg_fullname;
@@ -1831,11 +1833,11 @@ dh_arg_info_match_string (DhArgInfo* self,
 {
 	gchar* pstr = NULL;
 	gchar* _tmp0_;
-	const gchar* _tmp26_;
+	const gchar* _tmp28_;
 	gchar* result;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (str != NULL, NULL);
-	_tmp0_ = g_ascii_strdown (str, (gssize) -1);
+	_tmp0_ = g_strdup (str);
 	pstr = _tmp0_;
 	{
 		gint i = 0;
@@ -1846,21 +1848,15 @@ dh_arg_info_match_string (DhArgInfo* self,
 			while (TRUE) {
 				GList* _tmp3_;
 				gchar* match_str = NULL;
-				gchar* _tmp4_;
-				const gchar* _tmp5_;
-				GList* _tmp6_;
-				gconstpointer _tmp7_;
-				gchar* _tmp8_;
-				gboolean _tmp9_ = FALSE;
-				const gchar* _tmp10_;
-				const gchar* _tmp11_;
-				gchar* _tmp16_;
-				const gchar* _tmp17_;
-				GList* _tmp18_;
-				gconstpointer _tmp19_;
-				gchar* _tmp20_;
-				const gchar* _tmp21_;
-				const gchar* _tmp22_;
+				GList* _tmp4_;
+				gconstpointer _tmp5_;
+				gchar* _tmp18_;
+				const gchar* _tmp19_;
+				GList* _tmp20_;
+				gconstpointer _tmp21_;
+				gchar* _tmp22_;
+				const gchar* _tmp23_;
+				const gchar* _tmp24_;
 				if (!_tmp1_) {
 					gint _tmp2_;
 					_tmp2_ = i;
@@ -1871,54 +1867,68 @@ dh_arg_info_match_string (DhArgInfo* self,
 				if (!(((guint) i) < g_list_length (_tmp3_))) {
 					break;
 				}
-				_tmp4_ = g_strdup ("^%c$");
-				match_str = _tmp4_;
-				_tmp5_ = match_str;
-				_tmp6_ = self->arg;
-				_tmp7_ = g_list_nth_data (_tmp6_, (guint) i);
-				_tmp8_ = g_strdup_printf (_tmp5_, (gchar) ((gintptr) _tmp7_));
-				_g_free0 (match_str);
-				match_str = _tmp8_;
-				_tmp10_ = match_str;
-				_tmp11_ = pstr;
-				if (g_regex_match_simple (_tmp10_, _tmp11_, 0, 0)) {
+				match_str = NULL;
+				_tmp4_ = self->arg;
+				_tmp5_ = g_list_nth_data (_tmp4_, (guint) i);
+				if (((gint) ((gchar) ((gintptr) _tmp5_))) != 0) {
+					gchar* _tmp6_;
+					const gchar* _tmp7_;
+					GList* _tmp8_;
+					gconstpointer _tmp9_;
+					gchar* _tmp10_;
+					gboolean _tmp11_ = FALSE;
 					const gchar* _tmp12_;
-					_tmp12_ = match_str;
-					_tmp9_ = g_strcmp0 (_tmp12_, "^$") != 0;
-				} else {
-					_tmp9_ = FALSE;
-				}
-				if (_tmp9_) {
-					GList* _tmp13_;
-					gconstpointer _tmp14_;
-					gchar* _tmp15_;
-					_tmp13_ = self->arg_fullname;
-					_tmp14_ = g_list_nth_data (_tmp13_, (guint) i);
-					_tmp15_ = g_strdup ((const gchar*) _tmp14_);
-					result = _tmp15_;
+					const gchar* _tmp13_;
+					_tmp6_ = g_strdup ("^%c$");
 					_g_free0 (match_str);
-					_g_free0 (pstr);
-					return result;
+					match_str = _tmp6_;
+					_tmp7_ = match_str;
+					_tmp8_ = self->arg;
+					_tmp9_ = g_list_nth_data (_tmp8_, (guint) i);
+					_tmp10_ = g_strdup_printf (_tmp7_, (gchar) ((gintptr) _tmp9_));
+					_g_free0 (match_str);
+					match_str = _tmp10_;
+					_tmp12_ = match_str;
+					_tmp13_ = pstr;
+					if (g_regex_match_simple (_tmp12_, _tmp13_, 0, 0)) {
+						const gchar* _tmp14_;
+						_tmp14_ = match_str;
+						_tmp11_ = g_strcmp0 (_tmp14_, "^$") != 0;
+					} else {
+						_tmp11_ = FALSE;
+					}
+					if (_tmp11_) {
+						GList* _tmp15_;
+						gconstpointer _tmp16_;
+						gchar* _tmp17_;
+						_tmp15_ = self->arg_fullname;
+						_tmp16_ = g_list_nth_data (_tmp15_, (guint) i);
+						_tmp17_ = g_strdup ((const gchar*) _tmp16_);
+						result = _tmp17_;
+						_g_free0 (match_str);
+						_g_free0 (pstr);
+						return result;
+					}
 				}
-				_tmp16_ = g_strdup ("^%s$");
+				_tmp18_ = g_strdup ("^%s$");
 				_g_free0 (match_str);
-				match_str = _tmp16_;
-				_tmp17_ = match_str;
-				_tmp18_ = self->arg_fullname;
-				_tmp19_ = g_list_nth_data (_tmp18_, (guint) i);
-				_tmp20_ = g_strdup_printf (_tmp17_, (const gchar*) _tmp19_);
+				match_str = _tmp18_;
+				_tmp19_ = match_str;
+				_tmp20_ = self->arg_fullname;
+				_tmp21_ = g_list_nth_data (_tmp20_, (guint) i);
+				_tmp22_ = g_strdup_printf (_tmp19_, (const gchar*) _tmp21_);
 				_g_free0 (match_str);
-				match_str = _tmp20_;
-				_tmp21_ = match_str;
-				_tmp22_ = pstr;
-				if (g_regex_match_simple (_tmp21_, _tmp22_, 0, 0)) {
-					GList* _tmp23_;
-					gconstpointer _tmp24_;
-					gchar* _tmp25_;
-					_tmp23_ = self->arg_fullname;
-					_tmp24_ = g_list_nth_data (_tmp23_, (guint) i);
-					_tmp25_ = g_strdup ((const gchar*) _tmp24_);
-					result = _tmp25_;
+				match_str = _tmp22_;
+				_tmp23_ = match_str;
+				_tmp24_ = pstr;
+				if (g_regex_match_simple (_tmp23_, _tmp24_, 0, 0)) {
+					GList* _tmp25_;
+					gconstpointer _tmp26_;
+					gchar* _tmp27_;
+					_tmp25_ = self->arg_fullname;
+					_tmp26_ = g_list_nth_data (_tmp25_, (guint) i);
+					_tmp27_ = g_strdup ((const gchar*) _tmp26_);
+					result = _tmp27_;
 					_g_free0 (match_str);
 					_g_free0 (pstr);
 					return result;
@@ -1927,15 +1937,15 @@ dh_arg_info_match_string (DhArgInfo* self,
 			}
 		}
 	}
-	_tmp26_ = pstr;
-	if (g_strcmp0 (_tmp26_, "") == 0) {
-		GList* _tmp27_;
-		gconstpointer _tmp28_;
-		gchar* _tmp29_;
-		_tmp27_ = self->arg_fullname;
-		_tmp28_ = g_list_nth_data (_tmp27_, (guint) 0);
-		_tmp29_ = g_strdup ((const gchar*) _tmp28_);
-		result = _tmp29_;
+	_tmp28_ = pstr;
+	if (g_strcmp0 (_tmp28_, "") == 0) {
+		GList* _tmp29_;
+		gconstpointer _tmp30_;
+		gchar* _tmp31_;
+		_tmp29_ = self->arg_fullname;
+		_tmp30_ = g_list_nth_data (_tmp29_, (guint) 0);
+		_tmp31_ = g_strdup ((const gchar*) _tmp30_);
+		result = _tmp31_;
 		_g_free0 (pstr);
 		return result;
 	}
@@ -2038,6 +2048,13 @@ dh_out_init_readline (DhOut* self)
 	g_return_if_fail (self != NULL);
 	rl_readline_name = "dhutil";
 	rl_attempted_completion_function = _dh_out_dhutil_completion_rl_completion_func_t;
+}
+
+void
+dh_out_no_output_string_while_no_validator (DhOut* self)
+{
+	g_return_if_fail (self != NULL);
+	self->priv->output_str_while_nov = FALSE;
 }
 
 static gchar*
@@ -2685,11 +2702,13 @@ dh_out_read_and_output_custom (DhOut* self,
 					}
 				}
 			} else {
-				GValue _tmp70_ = {0};
-				g_value_init (&_tmp70_, G_TYPE_STRING);
-				g_value_take_string (&_tmp70_, str);
-				*result = _tmp70_;
-				return;
+				if (self->priv->output_str_while_nov) {
+					GValue _tmp70_ = {0};
+					g_value_init (&_tmp70_, G_TYPE_STRING);
+					g_value_take_string (&_tmp70_, str);
+					*result = _tmp70_;
+					return;
+				}
 			}
 			g_print ("Unsuccess!\n");
 		}
@@ -2799,6 +2818,7 @@ dh_out_instance_init (DhOut * self,
 {
 	self->priv = dh_out_get_instance_private (self);
 	self->priv->match_string = FALSE;
+	self->priv->output_str_while_nov = TRUE;
 }
 
 static void

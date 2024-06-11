@@ -284,6 +284,7 @@ VALA_EXTERN DhArgInfo* dh_arg_info_new (void);
 VALA_EXTERN DhArgInfo* dh_arg_info_construct (GType object_type);
 VALA_EXTERN GType dh_out_get_type (void) G_GNUC_CONST ;
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (DhOut, g_object_unref)
+VALA_EXTERN void dh_out_no_output_string_while_no_validator (DhOut* self);
 VALA_EXTERN void dh_out_output_match_string_than_arg (DhOut* self);
 VALA_EXTERN void dh_out_read_and_output (DhOut* self,
                              const gchar* tip_message,

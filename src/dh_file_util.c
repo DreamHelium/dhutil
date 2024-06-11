@@ -36,47 +36,6 @@ static int strstr_to_int(gconstpointer element, gconstpointer user_data)
     else return -1;
 }
 
-int dhlrc_write_file(char* pos,char* content, size_t count)
-{
-    FILE* f = fopen(pos,"wb");
-    fwrite(content,1,count,f);
-    fclose(f);
-    return 0;
-}
-
-char *dhlrc_read_file(const char *filepos, int *size)
-{
-    FILE* f = fopen(filepos,"rb");
-    if(f)
-    {
-        fseek(f,0,SEEK_END);
-        *size = ftell(f);
-        fseek(f,0,SEEK_SET);
-
-        char* data = (char*)malloc(*size * sizeof(char));
-        fread(data,1,*size,f);
-        fclose(f);
-        return data;
-    }
-    else
-    {
-        *size = 0;
-        return NULL;
-    }
-}
-
-
-int dhlrc_file_exist(const char *filepos)
-{
-    FILE* f = fopen(filepos, "rb");
-    if(f)
-    {
-        fclose(f);
-        return 1;
-    }
-    else return 0;
-}
-
 GList* dh_file_list_create(const char* pos)
 {
     GFile* dir = g_file_new_for_path(pos);
@@ -227,4 +186,15 @@ gboolean dh_write_file_gfile(GFile* file, char* content, gsize count)
     {
         return FALSE;
     }
+}
+
+gboolean dh_file_is_directory(const char *filepos)
+{
+    GFile* file = g_file_new_for_path(filepos);
+    GFileType type = g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL);
+    gboolean ret = FALSE;
+    if(type == G_FILE_TYPE_DIRECTORY)
+        ret = TRUE;
+    g_object_unref(file);
+    return ret;
 }

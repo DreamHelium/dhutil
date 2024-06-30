@@ -21,7 +21,7 @@ set(DHUTIL_LIB dhutil)
 add_definitions(-DGETTEXT_PACKAGE="dhutil")
 
 set(DHUTIL_MAIN_POT_FILE_DEPENDS
-    src/dh_string_util.c
+    dh_string_util.c
 )
 
 list(APPEND CMAKE_MODULE_PATH

@@ -1,6 +1,6 @@
-#include "src/dh_general_isoc.h"
-#include "src/dh_generaliface.h"
-#include "src/dh_validator.h"
+#include "dh_general_isoc.h"
+#include "dh_generaliface.h"
+#include "dh_validator.h"
 #include <locale.h>
 #include <stdio.h>
 

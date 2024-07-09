@@ -21,7 +21,7 @@ set(DHUTIL_LIB dhutil)
 add_definitions(-DGETTEXT_PACKAGE="dhutil")
 
 set(DHUTIL_MAIN_POT_FILE_DEPENDS
-    src/dh_string_util.c
+    dh_string_util.c
 )
 
 list(APPEND CMAKE_MODULE_PATH
@@ -37,22 +37,13 @@ file(GLOB HEADERS
     dh_string_util.h
     dh_file_util.h
     dh_list_util.h
-    dh_data_ooc.h
-    dh_generaliface.h
-    dh_general_isoc.h
-#?
     dh_validator.h
-#   dh_questionuiiface.h dh_questionui_isoc.h
 )
 set(SOURCES
     dh_string_util.c
     dh_file_util.c
     dh_list_util.c
-    dh_data_ooc.c
-    dh_generaliface.c
-    dh_general_isoc.c
     dh_validator.c
-#   dh_questionuiiface.c dh_questionui_isoc.c
 )
 
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")

@@ -21,8 +21,5 @@
 #include <dh_string_util.h>
 #include <dh_file_util.h>
 #include <dh_list_util.h>
-#include <dh_data_ooc.h>
-#include <dh_generaliface.h>
-#include <dh_general_isoc.h>
 
 #endif /* DHUTIL_H */

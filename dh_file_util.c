@@ -15,7 +15,6 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-
 #define DH_USE_DHLRC_FILE_UTIL
 #include "dh_string_util.h"
 #include "dh_file_util.h"
@@ -112,7 +111,7 @@ gboolean dh_file_create_gfile(GFile* file, gboolean is_file)
     else return FALSE;
 
 error_handle:
-    g_free(error);
+    g_error_free(error);
     return FALSE;
 }
 
@@ -196,5 +195,44 @@ gboolean dh_file_is_directory(const char *filepos)
     if(type == G_FILE_TYPE_DIRECTORY)
         ret = TRUE;
     g_object_unref(file);
+    return ret;
+}
+
+gboolean dh_file_copy(const char *source, const char *dest, GFileCopyFlags flags)
+{
+    GFile* file_source = g_file_new_for_path(source);
+    gchar* filename = g_path_get_basename(source);
+    gchar* destname = g_strconcat(dest, G_DIR_SEPARATOR_S, filename, NULL);
+    GFile* file_dest = g_file_new_for_path(destname);
+    g_free(filename);
+    g_free(destname);
+    GError* err = NULL;
+    gboolean ret = g_file_copy(file_source, file_dest, flags, NULL, NULL, NULL, &err);
+    g_object_unref(file_source);
+    g_object_unref(file_dest);
+    g_error_free(err);
+    return ret;
+}
+
+gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags flags)
+{
+    if(!dh_file_is_directory(source)) return FALSE;
+    GList* dir_files = dh_file_list_create(source);
+    gboolean ret = TRUE;
+    for(int i = 0 ; i < g_list_length(dir_files) ; i++)
+    {
+        if(!ret) break;
+        gchar* dir = g_build_path(G_DIR_SEPARATOR_S, source, g_list_nth_data(dir_files, i), NULL);
+        if(dh_file_is_directory(dir))
+        {
+            ret = dh_file_copy_dir(dir, dest, flags);
+            g_free(dir);
+            continue;
+        }
+        else ret = dh_file_copy(dir, dest, flags);
+        g_free(dir);
+    }
+
+    g_list_free_full(dir_files, free);
     return ret;
 }

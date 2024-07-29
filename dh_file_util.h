@@ -18,13 +18,13 @@
 #ifndef FILE_UTIL_H
 #define FILE_UTIL_H
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 #include <stdio.h>
 #include <gmodule.h>
 #include <gio/gio.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 GList*  dh_file_list_create(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
@@ -37,6 +37,8 @@ char* dh_read_file(const char* filepos, gsize* size);
 gboolean dh_write_file(const char* filepos, char* content, gsize count);
 gboolean dh_write_file_gfile(GFile* file, char* content, gsize count);
 gboolean dh_file_is_directory(const char* filepos);
+gboolean dh_file_copy(const char* source, const char* dest, GFileCopyFlags flags);
+gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags flags);
 
 
 #ifdef __cplusplus

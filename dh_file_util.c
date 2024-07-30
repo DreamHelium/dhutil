@@ -201,11 +201,7 @@ gboolean dh_file_is_directory(const char *filepos)
 gboolean dh_file_copy(const char *source, const char *dest, GFileCopyFlags flags)
 {
     GFile* file_source = g_file_new_for_path(source);
-    gchar* filename = g_path_get_basename(source);
-    gchar* destname = g_strconcat(dest, G_DIR_SEPARATOR_S, filename, NULL);
-    GFile* file_dest = g_file_new_for_path(destname);
-    g_free(filename);
-    g_free(destname);
+    GFile* file_dest = g_file_new_for_path(dest);
     GError* err = NULL;
     gboolean ret = g_file_copy(file_source, file_dest, flags, NULL, NULL, NULL, &err);
     g_object_unref(file_source);
@@ -216,21 +212,28 @@ gboolean dh_file_copy(const char *source, const char *dest, GFileCopyFlags flags
 
 gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags flags)
 {
+    if(!dh_file_exist(dest))
+        if(!dh_file_create(dest, FALSE))
+            return FALSE;
     if(!dh_file_is_directory(source)) return FALSE;
     GList* dir_files = dh_file_list_create(source);
     gboolean ret = TRUE;
     for(int i = 0 ; i < g_list_length(dir_files) ; i++)
     {
         if(!ret) break;
-        gchar* dir = g_build_path(G_DIR_SEPARATOR_S, source, g_list_nth_data(dir_files, i), NULL);
+        gchar* filename = g_list_nth_data(dir_files, i);
+        gchar* dir = g_build_path(G_DIR_SEPARATOR_S, source, filename, NULL);
+        gchar* dest_dir = g_build_path(G_DIR_SEPARATOR_S, dest, filename, NULL);
         if(dh_file_is_directory(dir))
         {
             ret = dh_file_copy_dir(dir, dest, flags);
             g_free(dir);
+            g_free(dest_dir);
             continue;
         }
-        else ret = dh_file_copy(dir, dest, flags);
+        else ret = dh_file_copy(dir, dest_dir, flags);
         g_free(dir);
+        g_free(dest_dir);
     }
 
     g_list_free_full(dir_files, free);

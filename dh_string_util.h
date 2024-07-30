@@ -139,7 +139,6 @@ typedef struct DhStrArray{
     int num;
 } DhStrArray;
 
-G_DEPRECATED_FOR(g_strdup)
 char*       dh_strdup(const char *o_str);
 char*       dh_str_array_cat(DhStrArray* arr);
 DhStrArray* dh_str_array_init(const char* str);

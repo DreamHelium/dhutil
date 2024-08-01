@@ -239,3 +239,31 @@ gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags f
     g_list_free_full(dir_files, free);
     return ret;
 }
+
+gboolean dh_file_download_file(const char *uri, const char *dir, GFileCopyFlags flags)
+{
+    GFile* uri_file = g_file_new_for_uri(uri);
+    if(!g_file_query_exists(uri_file, NULL))
+    {
+        g_object_unref(uri_file);
+        return FALSE;
+    }
+    char** uri_struct = g_strsplit(uri, "/", -1);
+    int uri_struct_len = 0;
+    for(; uri_struct[uri_struct_len] ;uri_struct_len++);
+    char* uri_file_name = g_strdup(uri_struct[uri_struct_len - 1]);
+    g_strfreev(uri_struct);
+
+    gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dir, uri_file_name, NULL);
+    g_free(uri_file_name);
+    GFile* dir_path_file = g_file_new_for_path(dir_path);
+    g_free(dir_path);
+    dh_file_create(dir, FALSE);
+    GError* err = NULL;
+    gboolean ret = g_file_copy(uri_file, dir_path_file, flags, NULL, NULL, NULL, &err);
+    if(err)
+        g_error_free(err);
+    g_object_unref(uri_file);
+    g_object_unref(dir_path_file);
+    return ret;
+}

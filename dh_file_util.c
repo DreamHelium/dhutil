@@ -200,17 +200,29 @@ gboolean dh_file_is_directory(const char *filepos)
 
 gboolean dh_file_copy(const char *source, const char *dest, GFileCopyFlags flags)
 {
+    return dh_file_copy_full_arg(source, dest, flags, NULL, NULL, NULL, NULL);
+}
+
+gboolean dh_file_copy_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error)
+{
     GFile* file_source = g_file_new_for_path(source);
     GFile* file_dest = g_file_new_for_path(dest);
-    GError* err = NULL;
-    gboolean ret = g_file_copy(file_source, file_dest, flags, NULL, NULL, NULL, &err);
+    gboolean ret = g_file_copy(file_source, file_dest, flags, cancellable, callback, data, error);
     g_object_unref(file_source);
     g_object_unref(file_dest);
-    g_error_free(err);
     return ret;
 }
 
 gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags flags)
+{
+    return dh_file_copy_dir_full_arg(source, dest, flags, NULL, NULL, NULL, NULL);
+}
+
+gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error)
 {
     if(!dh_file_exist(dest))
         if(!dh_file_create(dest, FALSE))
@@ -226,12 +238,12 @@ gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags f
         gchar* dest_dir = g_build_path(G_DIR_SEPARATOR_S, dest, filename, NULL);
         if(dh_file_is_directory(dir))
         {
-            ret = dh_file_copy_dir(dir, dest, flags);
+            ret = dh_file_copy_dir_full_arg(dir, dest, flags, cancellable, callback, data, error);
             g_free(dir);
             g_free(dest_dir);
             continue;
         }
-        else ret = dh_file_copy(dir, dest_dir, flags);
+        else ret = dh_file_copy_full_arg(dir, dest_dir, flags, cancellable, callback, data, error);
         g_free(dir);
         g_free(dest_dir);
     }
@@ -241,6 +253,13 @@ gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags f
 }
 
 gboolean dh_file_download_file(const char *uri, const char *dir, GFileCopyFlags flags)
+{
+    return dh_file_download_full_arg(uri, dir, flags, NULL, NULL, NULL, NULL);
+}
+
+gboolean dh_file_download_full_arg(const char* uri, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error)
 {
     GFile* uri_file = g_file_new_for_uri(uri);
     if(!g_file_query_exists(uri_file, NULL))
@@ -254,15 +273,12 @@ gboolean dh_file_download_file(const char *uri, const char *dir, GFileCopyFlags 
     char* uri_file_name = g_strdup(uri_struct[uri_struct_len - 1]);
     g_strfreev(uri_struct);
 
-    gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dir, uri_file_name, NULL);
+    gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dest, uri_file_name, NULL);
     g_free(uri_file_name);
     GFile* dir_path_file = g_file_new_for_path(dir_path);
     g_free(dir_path);
-    dh_file_create(dir, FALSE);
-    GError* err = NULL;
-    gboolean ret = g_file_copy(uri_file, dir_path_file, flags, NULL, NULL, NULL, &err);
-    if(err)
-        g_error_free(err);
+    dh_file_create(dest, FALSE);
+    gboolean ret = g_file_copy(uri_file, dir_path_file, flags, cancellable, callback, data, error);
     g_object_unref(uri_file);
     g_object_unref(dir_path_file);
     return ret;

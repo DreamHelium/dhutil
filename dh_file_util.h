@@ -38,9 +38,17 @@ gboolean dh_write_file(const char* filepos, char* content, gsize count);
 gboolean dh_write_file_gfile(GFile* file, char* content, gsize count);
 gboolean dh_file_is_directory(const char* filepos);
 gboolean dh_file_copy(const char* source, const char* dest, GFileCopyFlags flags);
+gboolean dh_file_copy_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error);
 gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags flags);
+gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error);
 gboolean dh_file_download_file(const char* uri, const char* dir, GFileCopyFlags flags);
-
+gboolean dh_file_download_full_arg(const char* uri, const char* dest, GFileCopyFlags flags,
+                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               gpointer data, GError** error);
 
 #ifdef __cplusplus
 }

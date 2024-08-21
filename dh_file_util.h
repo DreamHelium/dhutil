@@ -21,10 +21,14 @@
 #include <stdio.h>
 #include <gmodule.h>
 #include <gio/gio.h>
+#include <curl/curl.h>
+
 
 #ifdef __cplusplus
 extern "C"{
 #endif
+
+typedef int DhProgressCallback(void*, curl_off_t, curl_off_t, curl_off_t, curl_off_t);
 
 GList*  dh_file_list_create(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
@@ -47,7 +51,7 @@ gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCo
                                gpointer data, GError** error);
 gboolean dh_file_download_file(const char* uri, const char* dir, GFileCopyFlags flags);
 gboolean dh_file_download_full_arg(const char* uri, const char* dest, GFileCopyFlags flags,
-                               GCancellable* cancellable, GFileProgressCallback callback, 
+                               GCancellable* cancellable, DhProgressCallback callback, 
                                gpointer data, GError** error);
 
 #ifdef __cplusplus

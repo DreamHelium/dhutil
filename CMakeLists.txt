@@ -39,12 +39,14 @@ file(GLOB HEADERS
     dh_file_util.h
     dh_list_util.h
     dh_validator.h
+    dh_mt_table.h
 )
 set(SOURCES
     dh_string_util.c
     dh_file_util.c
     dh_list_util.c
     dh_validator.c
+    dh_mt_table.c
 )
 
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")

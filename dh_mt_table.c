@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_mt_table.h"
+#include "glib.h"
 
 DhMTTable* dh_mt_table_new(GHashFunc hash_func, GEqualFunc key_equal_func, GDestroyNotify key_destroy_func, GDestroyNotify value_destroy_func)
 {
@@ -27,6 +28,7 @@ DhMTTable* dh_mt_table_new(GHashFunc hash_func, GEqualFunc key_equal_func, GDest
 
 gboolean dh_mt_table_insert(DhMTTable* table, gpointer key, gpointer value)
 {
+    g_return_val_if_fail(table, FALSE);
     if(g_rw_lock_writer_trylock(&(table->lock)))
     {
         gboolean ret = g_hash_table_insert(table->table, key, value);
@@ -38,6 +40,7 @@ gboolean dh_mt_table_insert(DhMTTable* table, gpointer key, gpointer value)
 
 gboolean dh_mt_table_replace(DhMTTable* table, gpointer key, gpointer value)
 {
+    g_return_val_if_fail(table, FALSE);
     if(g_rw_lock_writer_trylock(&(table->lock)))
     {
         gboolean ret = g_hash_table_replace(table->table, key, value);
@@ -49,6 +52,7 @@ gboolean dh_mt_table_replace(DhMTTable* table, gpointer key, gpointer value)
 
 GList* dh_mt_table_get_keys(DhMTTable* table)
 {
+    g_return_val_if_fail(table, NULL);
     if(g_rw_lock_reader_trylock(&(table->lock)))
     {
         GList* ret = g_hash_table_get_keys(table->table);
@@ -60,6 +64,7 @@ GList* dh_mt_table_get_keys(DhMTTable* table)
 
 gpointer dh_mt_table_lookup(DhMTTable* table, gconstpointer key)
 {
+    g_return_val_if_fail(table, NULL);
     if(g_rw_lock_reader_trylock(&(table->lock)))
     {
         gpointer ret = g_hash_table_lookup(table->table, key);
@@ -71,6 +76,7 @@ gpointer dh_mt_table_lookup(DhMTTable* table, gconstpointer key)
 
 gboolean dh_mt_table_remove(DhMTTable* table, gconstpointer key)
 {
+    g_return_val_if_fail(table, FALSE);
     if(g_rw_lock_writer_trylock(&(table->lock)))
     {
         gboolean ret = g_hash_table_remove(table->table, key);
@@ -82,6 +88,7 @@ gboolean dh_mt_table_remove(DhMTTable* table, gconstpointer key)
 
 gboolean dh_mt_table_destroy(DhMTTable* table)
 {
+    g_return_val_if_fail(table, FALSE);
     if(table && g_rw_lock_writer_trylock(&(table->lock)))
     {
         g_hash_table_destroy(table->table);

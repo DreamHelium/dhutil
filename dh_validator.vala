@@ -258,8 +258,27 @@ class DhArgInfo : Object{
             return arg_fullname.nth_data(0);
         return null;
     }
+
     public void change_default_arg(char arg){
         this.default_arg = arg;
+        int default_arg_pos = -1;
+        for(int i = 0 ; i < this.arg.length() ; i++)
+        {
+            if(this.arg.nth_data(i) == arg)
+            {
+                default_arg_pos = i;
+                break;
+            }
+        }
+        char old_arg = this.arg.nth_data(0);
+        this.arg.nth(0).data = arg;
+        this.arg.nth(default_arg_pos).data = old_arg;
+        string old_str = this.arg_fullname.nth_data(0);
+        this.arg_fullname.nth(0).data = this.arg_fullname.nth_data(default_arg_pos);
+        this.arg_fullname.nth(default_arg_pos).data = old_str;
+        string old_description = this.description.nth_data(0);
+        this.description.nth(0).data = this.description.nth_data(default_arg_pos);
+        this.description.nth(default_arg_pos).data = old_description;
     }
 }
 
@@ -267,10 +286,33 @@ class DhOut : Object{
     private static DhArgInfo info = null;
     private bool match_string = false;
     private bool output_str_while_nov = true;
+    private bool show_opt = false;
+    public signal void sig_eof();
 
     private void init_readline(){
         Readline.readline_name = "dhutil";
         Readline.attempted_completion_function = dhutil_completion;
+    }
+
+    private string get_opt(DhArgInfo arg)
+    {
+        string str = "[%s]";
+        string arg_str = "";
+        for(int i = 0 ; i < arg.arg.length() ; i++)
+        {
+            string single_arg = string.nfill(1, arg.arg.nth_data(i));
+            if(i == 0) single_arg = single_arg.ascii_up(1);
+            arg_str += single_arg;
+            arg_str += "/";
+        }
+        arg_str += "?";
+        str = str.printf(arg_str);
+        return str;
+    }
+
+    public void set_show_opt(bool option)
+    {
+        show_opt = option;
     }
 
     public void no_output_string_while_no_validator(){
@@ -330,14 +372,24 @@ class DhOut : Object{
             info = arg;
             string str;
             if(use_readline){
-                str = Readline.readline(dgettext(gettext_package, tip_message));
+                string prompt = gettext(tip_message);
+                if(show_opt && arg != null)
+                {
+                    prompt += " ";
+                    prompt += get_opt(arg);
+                    prompt += ": ";
+                }
+                str = Readline.readline(prompt);
             }
             else{
                 print(dgettext(gettext_package, tip_message));
                 str = func(null);
             }
             if(str == null) /* Error occured */
+            {
+                sig_eof();
                 return Type.NONE;
+            }
             else{
                 if(str[0] != 0)
                     Readline.History.add(str);

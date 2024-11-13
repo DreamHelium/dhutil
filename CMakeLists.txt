@@ -16,18 +16,11 @@ find_package(PkgConfig)
 pkg_search_module(GIO REQUIRED gio-2.0)
 pkg_search_module(rl REQUIRED readline)
 pkg_search_module(CURL REQUIRED libcurl)
+pkg_search_module(nc REQUIRED ncursesw)
 
 set(DHUTIL_LIB dhutil)
 
 add_definitions(-DGETTEXT_PACKAGE="dhutil")
-
-set(DHUTIL_MAIN_POT_FILE_DEPENDS
-    dh_string_util.c
-)
-
-list(APPEND CMAKE_MODULE_PATH
-    /usr/share/VCM/Vala
-)
 
 add_definitions (
     -DPACKAGE="${PACKAGE}"
@@ -40,6 +33,7 @@ file(GLOB HEADERS
     dh_list_util.h
     dh_validator.h
     dh_mt_table.h
+    dh_nc_rl.h
 )
 set(SOURCES
     dh_string_util.c
@@ -47,6 +41,7 @@ set(SOURCES
     dh_list_util.c
     dh_validator.c
     dh_mt_table.c
+    dh_nc_rl.c
 )
 
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")
@@ -55,16 +50,13 @@ target_include_directories(dhutil
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         "${GIO_INCLUDE_DIRS}")
 
-target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURL_LIBRARIES} ${nc_LIBRARIES})
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_list_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_validator.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-
-
-add_subdirectory(po)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/libdhutil.pc.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" @ONLY)

@@ -10,13 +10,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(DHUTIL_VERSION_SO 0)
 
+set(CURSES_NEED_WIDE ON)
+
 find_package(Gettext)
 find_package(PkgConfig)
+find_package(Curses)
 
 pkg_search_module(GIO REQUIRED gio-2.0)
 pkg_search_module(rl REQUIRED readline)
 pkg_search_module(CURL REQUIRED libcurl)
-pkg_search_module(nc REQUIRED ncursesw)
+
+message(${PKG_CONFIG_EXECUTABLE})
 
 set(DHUTIL_LIB dhutil)
 
@@ -44,13 +48,15 @@ set(SOURCES
     dh_nc_rl.c
 )
 
+message(${CURSES_LIBRARIES})
+
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")
 
 target_include_directories(dhutil
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         "${GIO_INCLUDE_DIRS}")
 
-target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURL_LIBRARIES} ${nc_LIBRARIES})
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURL_LIBRARIES} ${CURSES_LIBRARIES})
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

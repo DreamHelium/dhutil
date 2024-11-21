@@ -15,14 +15,12 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#define DH_USE_DHLRC_FILE_UTIL
 #include "dh_string_util.h"
 #include "dh_file_util.h"
 #include "dh_list_util.h"
 #include <stdlib.h>
 #include <string.h>
 #include <gio/gio.h>
-#include <curl/curl.h>
 
 static int internal_strcmp(gconstpointer a, gconstpointer b)
 {
@@ -253,76 +251,10 @@ gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCo
     return ret;
 }
 
-gboolean dh_file_download_file(const char *uri, const char *dir, GFileCopyFlags flags)
+char* dh_file_get_current_program_dir(const char* arg_zero)
 {
-    return dh_file_download_full_arg(uri, dir, flags, NULL, NULL, NULL, NULL);
-}
-
-static int progress_callback(void *clientp,
-                                curl_off_t dltotal,
-                                curl_off_t dlnow,
-                                curl_off_t ultotal,
-                                curl_off_t ulnow)
-{
-    printf("%ld/%ld\n", dlnow, dltotal);
-    return 0; /* all is good */
-}
-
-
-gboolean dh_file_download_full_arg(const char* uri, const char* dest, GFileCopyFlags flags,
-                               GCancellable* cancellable, DhProgressCallback callback, 
-                               gpointer data, GError** error)
-{
-    // GFile* uri_file = g_file_new_for_uri(uri);
-    // // if(!g_file_query_exists(uri_file, NULL))
-    // // {
-    // //     g_object_unref(uri_file);
-    // //     return FALSE;
-    // // }
-    //
-    // char* content = NULL;
-    // gsize len = 0;
-    //
-    // GError* err = NULL;
-    // GFileInputStream* gfis  = g_file_read(uri_file, NULL, &err);
-    // g_message("%s", err->message ? err->message : "NULL");
-    // g_object_unref(gfis);
-    //
-
-    // GFile* dir_path_file = g_file_new_for_path(dir_path);
-    // g_free(dir_path);
-    // dh_file_create(dest, FALSE);
-    // gboolean ret = g_file_copy(uri_file, dir_path_file, flags, cancellable, callback, data, error);
-    // g_object_unref(uri_file);
-    // g_object_unref(dir_path_file);
-    // return ret;
-
-    CURL* curl = curl_easy_init();
-    if(curl)
-    {
-        /* Split and get uri file name */
-        char** uri_struct = g_strsplit(uri, "/", -1);
-        int uri_struct_len = 0;
-        for(; uri_struct[uri_struct_len] ;uri_struct_len++);
-        char* uri_file_name = g_strdup(uri_struct[uri_struct_len - 1]);
-        g_strfreev(uri_struct);
-
-        gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dest, uri_file_name, NULL);
-        g_free(uri_file_name);
-
-        FILE* f = fopen(dir_path, "wb");
-        CURLcode res;
-        curl_easy_setopt(curl, CURLOPT_URL, uri);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, data);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, callback);
-        res = curl_easy_perform(curl);
-        g_message("%d", res);
-        curl_easy_cleanup(curl);
-
-        g_free(dir_path);
-        return TRUE;
-    }
-    else return FALSE;
+    char* full_dir = g_find_program_in_path(arg_zero);
+    char* dir = g_path_get_dirname(full_dir);
+    g_free(full_dir);
+    return dir;
 }

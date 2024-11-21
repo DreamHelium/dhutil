@@ -39,6 +39,7 @@ int         dh_str_array_add_str(DhStrArray** arr ,const char* str);
 gboolean    dh_str_array_find_repeated(DhStrArray* arr, const char* str);
 guint       dh_str_array_find_char(DhStrArray* arr, char key);
 void        dh_str_array_free(DhStrArray* arr);
+gboolean    dh_str_find_char(const char* str, char find_char);
 
 /** Use dh_getdelim */
 int         dh_getline(char** input, size_t* n, FILE* stream);

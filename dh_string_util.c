@@ -68,6 +68,17 @@ char* dh_str_array_cat(DhStrArray* arr)
     else return NULL;
 }
 
+gboolean dh_str_find_char(const char* str, char find_char)
+{
+    while(*str)
+    {
+        if(*str == find_char)
+            return TRUE;
+        str++;
+    }
+    return FALSE;
+}
+
 static guint find_char(const char* str, char key)
 {
     guint i = 0;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(dhutil
-	VERSION 0.1.8
+	VERSION 0.2.0
 	LANGUAGES C)
 
 include(GNUInstallDirs)
@@ -18,7 +18,6 @@ find_package(Curses)
 
 pkg_search_module(GIO REQUIRED gio-2.0)
 pkg_search_module(rl REQUIRED readline)
-pkg_search_module(CURL REQUIRED libcurl)
 
 message(${PKG_CONFIG_EXECUTABLE})
 
@@ -56,7 +55,7 @@ target_include_directories(dhutil
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         "${GIO_INCLUDE_DIRS}")
 
-target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURL_LIBRARIES} ${CURSES_LIBRARIES})
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${rl_LIBRARIES} ${CURSES_LIBRARIES})
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

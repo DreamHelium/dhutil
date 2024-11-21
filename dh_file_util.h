@@ -18,7 +18,6 @@
 #ifndef FILE_UTIL_H
 #define FILE_UTIL_H
 
-#include <stdio.h>
 #include <gmodule.h>
 #include <gio/gio.h>
 #include <curl/curl.h>
@@ -49,10 +48,8 @@ gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags f
 gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
                                GCancellable* cancellable, GFileProgressCallback callback, 
                                gpointer data, GError** error);
-gboolean dh_file_download_file(const char* uri, const char* dir, GFileCopyFlags flags);
-gboolean dh_file_download_full_arg(const char* uri, const char* dest, GFileCopyFlags flags,
-                               GCancellable* cancellable, DhProgressCallback callback, 
-                               gpointer data, GError** error);
+
+char*    dh_file_get_current_program_dir(const char* arg_zero);
 
 #ifdef __cplusplus
 }

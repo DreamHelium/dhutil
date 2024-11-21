@@ -21,7 +21,7 @@ int main()
     dh_out_read_and_output(out, "test:", "dhutil", args, DH_VALIDATOR(validator), TRUE, &ret);
     if(G_VALUE_HOLDS_CHAR(&ret))
     {
-        dh_file_download_file("https://mirrors.tuna.tsinghua.edu.cn/opensuse/tumbleweed/repo/oss/README", ".", G_FILE_COPY_OVERWRITE);
+        // dh_file_download_file("https://mirrors.tuna.tsinghua.edu.cn/opensuse/tumbleweed/repo/oss/README", ".", G_FILE_COPY_OVERWRITE);
         /* You can put some test code here. */
         g_print("%c\n", g_value_get_schar(&ret));
     }

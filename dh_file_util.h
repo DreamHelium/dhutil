@@ -20,14 +20,10 @@
 
 #include <gmodule.h>
 #include <gio/gio.h>
-#include <curl/curl.h>
-
 
 #ifdef __cplusplus
 extern "C"{
 #endif
-
-typedef int DhProgressCallback(void*, curl_off_t, curl_off_t, curl_off_t, curl_off_t);
 
 GList*  dh_file_list_create(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);

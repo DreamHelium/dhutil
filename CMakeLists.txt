@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(dhutil
 	VERSION 0.2.0
-	LANGUAGES C)
+	LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 
@@ -37,6 +37,7 @@ file(GLOB HEADERS
     dh_validator.h
     dh_mt_table.h
     dh_nc_rl.h
+    dh_validator_cpp.hpp
 )
 set(SOURCES
     dh_string_util.c
@@ -45,6 +46,7 @@ set(SOURCES
     dh_validator.c
     dh_mt_table.c
     dh_nc_rl.c
+    dh_validator_cpp.cpp
 )
 
 message(${CURSES_LIBRARIES})

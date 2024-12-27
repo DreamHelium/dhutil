@@ -19,13 +19,15 @@
 #define DH_VALIDATOR_CPP_H
 
 typedef char* (*DhReadlineFn)(const char*);
-typedef void (*DhReadlineAddCompletion)(char, char**);
+typedef void (*DhReadlineSetCompletion)(void*);
 typedef void (*DhReadlineAddHistory)(const char*);
+typedef void (*DhReadlineInit)(const char* name);
 
 typedef struct DhReadlineFns{
     DhReadlineFn readline_fn;
-    DhReadlineAddCompletion add_completion;
+    DhReadlineSetCompletion set_completion;
     DhReadlineAddHistory add_history;
+    DhReadlineInit init;
 } DhReadlineFns;
 
 #ifdef __cplusplus
@@ -33,9 +35,26 @@ typedef struct DhReadlineFns{
 #include <string>
 #include <regex>
 #include <vector>
+#include <variant>
 
 namespace dh
 {
+    static std::vector<std::string> string_split(std::string str, char delim)
+    {
+        /* Reference: https://zh.cppreference.com/w/cpp/string/basic_string/getline */
+        /*  */
+        std::vector<std::string> ret;
+        std::istringstream stream;
+        stream.str(str);
+
+        for(std::string line; std::getline(stream, line, delim) ;)
+            ret.push_back(line);
+        return ret;
+    }
+
+    template<typename T>
+    T get_num_internal(const char* str, char** end_ptr ,int base);
+
     inline void string_strip(std::string& str)
     {
         str.erase(0, str.find_first_not_of(' '))
@@ -61,12 +80,15 @@ namespace dh
     private:
         T min;
         T max;
+        int base = 10;
     public:
-        virtual bool validate(std::string& str) = 0;
-        RangeValidator(T min_val, T max_val)
+        RangeValidator(T min_val, T max_val) : min(min_val), max(max_val)
+        { }
+        RangeValidator(T min_val, T max_val, int base) : RangeValidator<T>(min_val, max_val)
         {
-            min = min_val;
-            max = max_val;
+            if(base == 0 || (base >= 2 && base <= 36))
+                this->base = base;
+            else this->base = 10;
         }
         bool validate(T val)
         {
@@ -74,35 +96,22 @@ namespace dh
                 return true;
             else return false;
         }
-    };
-
-    class IntValidator : public RangeValidator<int64_t>
-    {
-    private:
-        int base = 10;
-    public:
-    IntValidator(int64_t min, int64_t max) : RangeValidator<int64_t>(min, max)
-    {};
-    IntValidator(int64_t min, int64_t max, int base): RangeValidator<int64_t>(min, max)
-    {
-        if(base == 0 || (base >= 2 && base <= 36))
-            this->base = base;
-        else this->base = 10;
-    };
-    using RangeValidator<int64_t>::validate;
-    bool validate(std::string& str) override
-    {
-        string_strip(str);
-        char* eptr;
-        auto val = std::strtoll(str.c_str(), &eptr, base);
-        if(*eptr == 0)
+        int get_base(){ return base; }
+        bool validate(std::string& str) override
         {
-            set_result(val);
-            return validate(val);
+            string_strip(str);
+            char* end_ptr;
+            auto ret = get_num_internal<T>(str.c_str(), &end_ptr, base);
+            if(*end_ptr == 0 && *str.c_str() != 0)
+            {
+                this->set_result(ret);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
-        else return false;
-    }
-    int get_base(){ return base; }
     };
 
     class RegexValidator : public Validator<std::regex>
@@ -130,41 +139,104 @@ namespace dh
     class VectorValidator : public Validator<std::vector<T>>
     {
         private:
+        char delim;
         bool same_range;
-        union
+        using range = struct range
         {
-            struct
-            {
-                std::vector<T> min_range;
-                std::vector<T> max_range;
-            };
-            /* only min and max needed */
-            std::vector<T> single_range;
+            std::vector<T> min_range;
+            std::vector<T> max_range;
         };
+        std::variant<range, std::vector<T>> ranges;
         public:
-        VectorValidator(std::vector<T> range)
+        VectorValidator(bool same_range, char delim) : same_range(same_range), delim(delim)
+        { }
+        VectorValidator(std::vector<T> range, char delim)
         {
             same_range = true;
-            single_range = range;
+            ranges = range;
+            this->delim = delim;
         }
-        VectorValidator(T min, T max)
+        VectorValidator(T min, T max, char delim)
         {
             same_range = true;
-            single_range.push_back(min);
-            single_range.push_back(max);
+            std::vector<T> r;
+            r.push_back(min);
+            r.push_back(max);
+            ranges = r;
+            this->delim = delim;
         }
-        VectorValidator(std::vector<T> min, std::vector<T> max)
+        VectorValidator(std::vector<T> min, std::vector<T> max, char delim)
         {
             same_range = false;
-            min_range = min;
-            max_range = max;
-        } 
+            range r = {min, max};
+            ranges = r;
+            this->delim = delim;
+        }
+
+        VectorValidator(bool same_range) : VectorValidator<T>(same_range, ',')
+        { }
+        VectorValidator(std::vector<T> range) : VectorValidator<T>(range, ',')
+        { }
+        VectorValidator(T min, T max) : VectorValidator<T>(min, max, ',')
+        { }
+        VectorValidator(std::vector<T> min, std::vector<T> max) : VectorValidator<T>(min, max, ',')
+        { }
+
+        bool add_range(T min, T max)
+        {
+            if(same_range)
+            {
+                try
+                {
+                    std::vector<T> single_range = std::get<std::vector<T>>(ranges);
+                    return false;
+                }                
+                catch(const std::bad_variant_access &e)
+                {
+                    std::vector<T> r;
+                    r.push_back(min);
+                    r.push_back(max);
+                    ranges = r;
+                    return true;
+                }
+            }
+            else
+            {
+                try
+                {
+                    range complex_ranges = std::get<range>(ranges);
+                    if(complex_ranges.max_range.empty())
+                    {
+                        std::vector<T> min_r = {min};
+                        std::vector<T> max_r = {max};
+                        range r = {min_r, max_r};
+                        ranges = r;
+                        return true;
+                    }
+                    complex_ranges.min_range.push_back(min);
+                    complex_ranges.max_range.push_back(max);
+                    ranges = complex_ranges;
+                    return true;
+                }                
+                catch(const std::bad_variant_access &e)
+                {
+                    // std::vector<T> min_r = {min};
+                    // std::vector<T> max_r = {max};
+                    // range r = {min_r, max_r};
+                    // ranges = r;
+                    // return true;
+                    return false; /* ? */
+                }
+            }
+        }
+
         bool validate(std::vector<T> source)
         {
             if(same_range)
             {
                 for(auto val : source)
                 {
+                    auto single_range = std::get<std::vector<T>>(ranges);
                     T min = single_range[0];
                     T max = single_range[1];
                     if(val < min || val > max)
@@ -174,6 +246,9 @@ namespace dh
             }
             else
             {
+                auto rs = std::get<range>(ranges);
+                auto min_range = rs.min_range;
+                auto max_range = rs.max_range;
                 auto min_len = min_range.size();
                 auto max_len = max_range.size();
                 if(min_len != max_len) return false;
@@ -184,6 +259,43 @@ namespace dh
                     if(source[i] < min_range[i] || source[i] > max_range[i])
                         return false;
                 }
+                return true;
+            }
+        }
+        bool validate(std::string& str) override
+        {
+            auto split_str = string_split(str, delim);
+            if(same_range)
+            {
+                std::vector<T> val;
+                for(auto single_str : split_str)
+                {
+                    auto single_range = std::get<std::vector<T>>(ranges);
+                    RangeValidator<T> validator(single_range[0], single_range[1]);
+                    if(validator.validate(single_str))
+                        val.push_back(validator.get_result());
+                    else return false;
+                }
+                this->set_result(val);
+                return true;
+            }
+            else
+            {
+                auto rs = std::get<range>(ranges);
+                auto min_range = rs.min_range;
+                auto max_range = rs.max_range;
+                std::vector<T> val;
+                if((split_str.size() != min_range.size()) ||
+                   (min_range.size() != max_range.size()))
+                    return false;
+                for(int i = 0 ; i < split_str.size() ; i++)
+                {
+                    RangeValidator<T> validator(min_range[i], max_range[i]);
+                    if(validator.validate(split_str[i]))
+                        val.push_back(validator.get_result());
+                    else return false;
+                }
+                this->set_result(val);
                 return true;
             }
         }
@@ -198,6 +310,10 @@ namespace dh
         std::vector<arg_fullname> arg_fullnames;
         std::vector<std::string> arg_descriptions;
         public:
+        std::vector<char> get_args()
+        { return args; }
+        std::vector<arg_fullname> get_arg_fullnames()
+        { return arg_fullnames; }
         int size()
         {
             return args.size();
@@ -290,10 +406,10 @@ namespace dh
     }
     inline char get_output(Arg* arg, DhReadlineFns* fns, const char* prompt, bool use_validator)
     {
-        IntValidator* validator = nullptr;
+        RangeValidator<int64_t>* validator = nullptr;
         if(use_validator && arg)
         {
-            validator = new IntValidator(0, arg->size() - 1);
+            validator = new RangeValidator<int64_t>(0, arg->size() - 1);
         }
         std::any ret = get_output(validator, arg, fns, prompt);
         try 
@@ -307,6 +423,7 @@ namespace dh
         } catch (const std::bad_any_cast& e) {
             return 0;
         }
+        
     }
     inline std::any get_output(DhReadlineFns* fns, const char* prompt)
     {

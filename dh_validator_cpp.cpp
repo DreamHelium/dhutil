@@ -16,7 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_validator_cpp.hpp"
+#include "dh_readline_cpp.hpp"
+#include <readline/history.h>
+#include <readline/readline.h>
 #include <any>
+#include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <cstring>
 
@@ -26,8 +31,7 @@ static char* get_line(const char* prompt)
 {
     if(prompt) std::cout << prompt;
     std::string str;
-    std::getline(std::cin, str);
-    if(!str.empty())
+    if(std::getline(std::cin, str))
     {
         int str_size = str.size();
         char* ret = (char*)malloc((str_size+1) * sizeof(char));
@@ -37,24 +41,49 @@ static char* get_line(const char* prompt)
     else return nullptr;
 }
 
-static DhReadlineFns fns = {get_line, NULL, NULL};
+static DhReadlineFns fns = {get_line, NULL, NULL, NULL};
+static DhReadlineFns rl_fns = {readline, dhutil_set_completion, add_history, init_readline};
+
 
 namespace dh{
+    template<>
+    int64_t get_num_internal<int64_t>(const char* str, char** end_ptr, int base)
+    {
+        return strtoll(str, end_ptr, base);
+    }
+
+    template<>
+    double get_num_internal<double>(const char* str, char** end_ptr, int base)
+    {
+        return strtod(str, end_ptr);
+    }
+
+    template<>
+    uint64_t get_num_internal<uint64_t>(const char *str, char **end_ptr, int base)
+    {
+        return strtoull(str, end_ptr, base);
+    }
+
     template<typename T>
     std::any get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt)
     {
-        IntValidator* int_validator;
-        if((int_validator = dynamic_cast<IntValidator*>(validator)) != nullptr)
+        RangeValidator<int64_t>* int_validator;
+        if((int_validator = dynamic_cast<RangeValidator<int64_t>*>(validator)) != nullptr)
         {
             if(int_validator->get_base() == 16)
             {
                 std::cerr << "Warning: the base is 16, might be conflict with arg!" << std::endl;
             }
         }
-        while(true && fns)
+        while(true && fns && fns->readline_fn)
         {
+            if(fns->set_completion) fns->set_completion((void*)arg);
+            if(fns->init) fns->init("dhutil");
+            
+            std::any empty_any;
             char* get_str = fns->readline_fn(prompt);
-            std::string str = get_str;
+            std::string str;
+            if(get_str) str = get_str;
             if(fns->add_history) fns->add_history(get_str);
             free(get_str);
             std::string striped_str = str;
@@ -64,7 +93,6 @@ namespace dh{
                 std::cout << arg->get_help();
                 continue;
             }
-            
             if(validator && validator->validate(str))
             {
                 return validator->get_result();
@@ -79,8 +107,12 @@ namespace dh{
                 if(str.empty()) return nullptr;
                 continue;
             }
-            else return str;
+            else if(get_str)
+                return str;
+            else return nullptr;
         }
+        std::cerr << "No readline function specified!";
+        return nullptr;
     }
 }
 
@@ -90,6 +122,21 @@ extern "C"
      * Showing in Chinese */
     void test()
     {
+        // dh::VectorValidator<int64_t> validator(false);
+        // validator.add_range(0, 100);
+        // validator.add_range(-1, 200);
+        // dh::Arg arg;
+        // arg.add_arg('t', "test", "Test for readline");
+        // std::any ret = dh::get_output(&validator, &arg, &rl_fns,"test: ");
+        // try 
+        // {
+        //     auto ret_val = std::any_cast<std::vector<int64_t>>(ret);
+        //     for(auto val : ret_val)
+        //         std::cout << val << std::endl;
+        // } catch (const std::bad_any_cast& e) {
+        // }
+        
+        
         while(true)
         {
         dh::Arg arg;
@@ -97,7 +144,7 @@ extern "C"
         arg.add_arg('a', vstr, "添加字符串");
         arg.add_arg('v', "view", "查看字符串");
         std::cout << "[0] 添加字符串\n" << "[1] 查看字符串\n";
-        char val = dh::get_output(&arg, &fns, "选择选项: ", true);
+        char val = dh::get_output(&arg, &rl_fns, "选择选项: ", true);
         if(val == 'a')
         {
             std::any str = dh::get_output(nullptr, &fns, "请输入字符串: ");
@@ -117,5 +164,6 @@ extern "C"
         {
             break;}
         }
+        
     }
 }

@@ -38,6 +38,7 @@ file(GLOB HEADERS
     dh_mt_table.h
     dh_nc_rl.h
     dh_validator_cpp.hpp
+    dh_readline_cpp.hpp
 )
 set(SOURCES
     dh_string_util.c
@@ -47,6 +48,7 @@ set(SOURCES
     dh_mt_table.c
     dh_nc_rl.c
     dh_validator_cpp.cpp
+    dh_readline_cpp.cpp
 )
 
 message(${CURSES_LIBRARIES})

@@ -18,9 +18,19 @@
 #ifndef DH_VALIDATOR_CPP_H
 #define DH_VALIDATOR_CPP_H
 
+#include <glib-object.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#include <stddef.h>
+#include <stdint.h>
+
+
 typedef char* (*DhReadlineFn)(const char*);
 typedef void (*DhReadlineSetCompletion)(void*);
-typedef void (*DhReadlineAddHistory)(const char*);
+typedef int (*DhReadlineAddHistory)(const char*);
 typedef void (*DhReadlineInit)(const char* name);
 
 typedef struct DhReadlineFns{
@@ -29,6 +39,26 @@ typedef struct DhReadlineFns{
     DhReadlineAddHistory add_history;
     DhReadlineInit init;
 } DhReadlineFns;
+
+char* cpp_get_line(const char* prompt);
+void dh_set_err_message(const char* str);
+void dh_set_package_name(const char* str);
+void* dh_int_validator_new(int64_t min, int64_t max, int base);
+void* dh_arg_new();
+void dh_arg_add_arg(void* arg, char c, const char* str, const char* description);
+void dh_int_validator_free(void* ptr);
+void dh_arg_free(void* ptr);
+void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val);
+
+#ifdef DH_EDITLINE_USED
+static DhReadlineFns fns = {readline, dhutil_set_completion, add_history, init_readline};
+#else
+static DhReadlineFns fns = {cpp_get_line, NULL, NULL, NULL};
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 #include <any>
@@ -397,38 +427,57 @@ namespace dh
         }
     };
 
-    template<typename T>
-    std::any get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt);
-    inline std::any get_output(Arg* arg, DhReadlineFns* fns, const char* prompt)
+    class GetOutput
     {
-        Validator<int>* ptr = nullptr;
-        return get_output(ptr, arg, fns, prompt);
-    }
-    inline char get_output(Arg* arg, DhReadlineFns* fns, const char* prompt, bool use_validator)
-    {
-        RangeValidator<int64_t>* validator = nullptr;
-        if(use_validator && arg)
-        {
-            validator = new RangeValidator<int64_t>(0, arg->size() - 1);
-        }
-        std::any ret = get_output(validator, arg, fns, prompt);
-        try 
-        {
-            int pos = std::any_cast<int64_t>(ret);
-            return arg->get_pos_char(pos);
-        } catch (const std::bad_any_cast& e) { }
-        try 
-        {
-            return std::any_cast<char>(ret);
-        } catch (const std::bad_any_cast& e) {
-            return 0;
-        }
+        private:
         
-    }
-    inline std::any get_output(DhReadlineFns* fns, const char* prompt)
-    {
-        return get_output(fns, prompt);
-    }
+        public:
+        static std::string err_message;
+        static const char* package_name;
+        static void change_err_message(std::string str)
+        {
+            err_message = str;
+        }
+        static void change_package_name(const char* str)
+        {
+            package_name = str;
+        }
+        template<typename T>
+        static std::any get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt);
+        static std::any get_output(Arg* arg, DhReadlineFns* fns, const char* prompt)
+        {
+            Validator<int>* ptr = nullptr;
+            return get_output(ptr, arg, fns, prompt);
+        }
+        static char get_output(Arg* arg, DhReadlineFns* fns, const char* prompt, bool use_validator)
+        {
+            RangeValidator<int64_t>* validator = nullptr;
+            if(use_validator && arg)
+            {
+                validator = new RangeValidator<int64_t>(0, arg->size() - 1);
+            }
+            std::any ret = get_output(validator, arg, fns, prompt);
+            try 
+            {
+                int pos = std::any_cast<int64_t>(ret);
+                return arg->get_pos_char(pos);
+            } catch (const std::bad_any_cast& e) { }
+            try 
+            {
+                return std::any_cast<char>(ret);
+            } catch (const std::bad_any_cast& e) {
+                return 0;
+            }
+            
+        }
+        static std::any get_output(DhReadlineFns* fns, const char* prompt)
+        {
+            return get_output(fns, prompt);
+        }
+    };
+
+    inline std::string GetOutput::err_message = "Validate error!";
+    inline const char* GetOutput::package_name = "dhutil";
 }
 
 #endif /* __cplusplus */

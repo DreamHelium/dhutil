@@ -16,34 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_validator_cpp.hpp"
-#include "dh_readline_cpp.hpp"
-#include <readline/history.h>
-#include <readline/readline.h>
 #include <any>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <cstring>
+#include <string>
 
 std::vector<std::string> string_list;
-
-static char* get_line(const char* prompt)
-{
-    if(prompt) std::cout << prompt;
-    std::string str;
-    if(std::getline(std::cin, str))
-    {
-        int str_size = str.size();
-        char* ret = (char*)malloc((str_size+1) * sizeof(char));
-        strcpy(ret, str.c_str());
-        return ret;
-    }
-    else return nullptr;
-}
-
-static DhReadlineFns fns = {get_line, NULL, NULL, NULL};
-static DhReadlineFns rl_fns = {readline, dhutil_set_completion, add_history, init_readline};
-
 
 namespace dh{
     template<>
@@ -65,7 +45,7 @@ namespace dh{
     }
 
     template<typename T>
-    std::any get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt)
+    std::any GetOutput::get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt)
     {
         RangeValidator<int64_t>* int_validator;
         if((int_validator = dynamic_cast<RangeValidator<int64_t>*>(validator)) != nullptr)
@@ -78,13 +58,13 @@ namespace dh{
         while(true && fns && fns->readline_fn)
         {
             if(fns->set_completion) fns->set_completion((void*)arg);
-            if(fns->init) fns->init("dhutil");
+            if(fns->init) fns->init(package_name);
             
             std::any empty_any;
             char* get_str = fns->readline_fn(prompt);
             std::string str;
             if(get_str) str = get_str;
-            if(fns->add_history) fns->add_history(get_str);
+            if(fns->add_history && get_str) fns->add_history(get_str);
             free(get_str);
             std::string striped_str = str;
             string_strip(striped_str);
@@ -103,7 +83,7 @@ namespace dh{
             }
             else if(validator || arg)
             {
-                std::cerr << "Validate Error!" << std::endl;
+                std::cerr << err_message << std::endl;
                 if(str.empty()) return nullptr;
                 continue;
             }
@@ -116,12 +96,113 @@ namespace dh{
     }
 }
 
+template<typename T>
+static dh::Validator<T>* transform_validator(void* validator)
+{
+    return dynamic_cast<dh::Validator<T>*>((dh::Validator<T>*)validator);
+}
+
 extern "C"
 {
+#include <glib-object.h>
+
+    char* cpp_get_line(const char* prompt)
+    {
+        if(prompt) std::cout << prompt;
+        std::string str;
+        if(std::getline(std::cin, str))
+        {
+            int str_size = str.size();
+            char* ret = (char*)malloc((str_size+1) * sizeof(char));
+            strcpy(ret, str.c_str());
+            return ret;
+        }
+        else return nullptr;
+    }
+
+    void dh_set_err_message(const char* str)
+    {
+        dh::GetOutput::change_err_message(str);
+    }
+
+    void dh_set_package_name(const char* str)
+    {
+        dh::GetOutput::change_package_name(str);
+    }
+
+    void* dh_int_validator_new(int64_t min, int64_t max, int base)
+    {
+        return (void*)new dh::RangeValidator<int64_t>(min, max, base);
+    }
+
+    void* dh_arg_new()
+    {
+        return (void*)new dh::Arg;
+    }
+
+    void dh_arg_add_arg(void* arg, char c, const char* str, const char* description)
+    {
+        dh::Arg* args = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
+        if(args)
+            args->add_arg(c, str, description);
+    }
+
+    void dh_int_validator_free(void* ptr)
+    {
+        dh::RangeValidator<int64_t>* validator = dynamic_cast<dh::RangeValidator<int64_t>*>((dh::RangeValidator<int64_t>*)ptr);
+        if(validator)
+            delete validator;
+    }
+
+    void dh_arg_free(void* ptr)
+    {
+        dh::Arg* args = dynamic_cast<dh::Arg*>((dh::Arg*)ptr);
+        if(args)
+            delete args;
+    }
+
+    static void set_value(std::any o_val, GValue* value)
+    {
+        /* Now only support int64_t, double, uint64_t and string */
+        try 
+        {
+            int64_t val = std::any_cast<int64_t>(o_val);
+            g_value_init(value, G_TYPE_INT64);
+            g_value_set_int64(value, val);
+        } catch (const std::bad_any_cast& e) { }
+        try 
+        {
+            double val = std::any_cast<double>(o_val);
+            g_value_init(value, G_TYPE_DOUBLE);
+            g_value_set_double(value, val);
+        } catch (const std::bad_any_cast& e) { }
+        try 
+        {
+            uint64_t val = std::any_cast<uint64_t>(o_val);
+            g_value_init(value, G_TYPE_UINT64);
+            g_value_set_uint64(value, val);
+        } catch (const std::bad_any_cast& e) { }
+        try 
+        {
+            std::string str = std::any_cast<std::string>(o_val);
+            g_value_init(value, G_TYPE_STRING);
+            g_value_set_string(value, str.c_str());
+        } catch (const std::bad_any_cast& e) { }
+    }
+
+    void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val)
+    {
+        dh::Validator<int64_t>* v = transform_validator<int64_t>(validator);
+        dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
+        std::any ret = dh::GetOutput::get_output(v, a, &fns, prompt);
+        set_value(ret, val);
+    }
+
     /* This is a sample of the string add & view func
      * Showing in Chinese */
     void test()
     {
+        setlocale(LC_ALL, "");
         // dh::VectorValidator<int64_t> validator(false);
         // validator.add_range(0, 100);
         // validator.add_range(-1, 200);
@@ -144,10 +225,10 @@ extern "C"
         arg.add_arg('a', vstr, "添加字符串");
         arg.add_arg('v', "view", "查看字符串");
         std::cout << "[0] 添加字符串\n" << "[1] 查看字符串\n";
-        char val = dh::get_output(&arg, &rl_fns, "选择选项: ", true);
+        char val = dh::GetOutput::get_output(&arg, &fns, "选择选项: ", true);
         if(val == 'a')
         {
-            std::any str = dh::get_output(nullptr, &fns, "请输入字符串: ");
+            std::any str = dh::GetOutput::get_output(nullptr, &fns, "请输入字符串: ");
             try {
                 std::string str_val = std::any_cast<std::string>(str);
                 string_list.push_back(str_val);

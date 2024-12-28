@@ -16,10 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "dh_readline_cpp.hpp"
-#include <readline/readline.h>
+#include <editline/readline.h>
 #include "dh_validator_cpp.hpp"
 #include "dh_string_util.h"
-#include <iostream>
 
 static dh::Arg* arg = nullptr;
 
@@ -33,17 +32,17 @@ void dhutil_set_completion(void* args)
    start at the top of the list. */
 static char* command_generator(const char *text, int state)
 {
-    int list_index = state, len = 0;
+    static int list_index, len = 0;
     // char *name;
 
     // /* If this is a new word to complete, initialize now.  This includes
     //     saving the length of TEXT for efficiency, and initializing the index
     //     variable to 0. */
-    // if (!state)
-    // {
-    //     list_index = 0;
+    if (!state)
+    {
+        list_index = 0;
         len = strlen(text);
-    // }
+    }
     if(arg)
     {
         std::vector<std::string> fullnames;
@@ -61,12 +60,11 @@ static char* command_generator(const char *text, int state)
             if(!strncmp(str.c_str(), text, len)) 
                 return dh_strdup(str.c_str());
         }
-        list_index -= fullnames.size();
         if(*text == 0)
         {
             std::string ret;
             char ret_char;
-            while(list_index < arg->get_args().size() && (ret_char = arg->get_args()[list_index]) != 0)
+            while((list_index - fullnames.size()) < arg->get_args().size() && (ret_char = arg->get_args()[list_index - fullnames.size()]) != 0)
             {
                 list_index++;
                 ret.assign(1, ret_char);

@@ -1,13 +1,22 @@
+#include "dh_validator_cpp.hpp"
+#include <stdio.h>
+
 extern void test();
 
 int main()
 {
+    void* validator = dh_int_validator_new(0, 100, 10);
+    GValue val;
+    dh_get_output(validator, NULL, "test", &val);
+    if(G_VALUE_HOLDS_INT64(&val))
+    {
+        printf("%ld", g_value_get_int64(&val));
+    }
+
     // DhDoubleValidator* validator = dh_double_validator_new();
     // double min = -1;
     // double max = 100;
     // DH_VALIDATOR_GET_INTERFACE(validator)->set_range(DH_VALIDATOR(validator), &min, &max);
-
-    test();
     // DhIntArrayValidator* validator = dh_int_array_validator_new();
     // gint64 min = 0;
     // gint64 max = 100;

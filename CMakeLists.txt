@@ -66,8 +66,10 @@ message("${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 message("${CMAKE_LIBRARY_PATH}")
 
 add_executable(example example.c)
+add_executable(example_cpp example.cpp)
 
 target_link_libraries(example PUBLIC dhutil)
+target_link_libraries(example_cpp PUBLIC dhutil)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
 install(TARGETS "${DHUTIL_LIB}"

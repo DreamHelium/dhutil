@@ -44,8 +44,7 @@ namespace dh{
         return strtoull(str, end_ptr, base);
     }
 
-    template<typename T>
-    std::any GetOutput::get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt)
+    std::any GetOutput::get_output(Validator* validator, Arg* arg, DhReadlineFns* fns, const char* prompt)
     {
         RangeValidator<int64_t>* int_validator;
         if((int_validator = dynamic_cast<RangeValidator<int64_t>*>(validator)) != nullptr)
@@ -94,12 +93,6 @@ namespace dh{
         std::cerr << "No readline function specified!";
         return nullptr;
     }
-}
-
-template<typename T>
-static dh::Validator<T>* transform_validator(void* validator)
-{
-    return dynamic_cast<dh::Validator<T>*>((dh::Validator<T>*)validator);
 }
 
 extern "C"
@@ -192,59 +185,9 @@ extern "C"
 
     void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val)
     {
-        dh::Validator<int64_t>* v = transform_validator<int64_t>(validator);
+        dh::Validator* v = dynamic_cast<dh::Validator*>((dh::Validator*)validator);
         dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
         std::any ret = dh::GetOutput::get_output(v, a, &fns, prompt);
         set_value(ret, val);
-    }
-
-    /* This is a sample of the string add & view func
-     * Showing in Chinese */
-    void test()
-    {
-        setlocale(LC_ALL, "");
-        // dh::VectorValidator<int64_t> validator(false);
-        // validator.add_range(0, 100);
-        // validator.add_range(-1, 200);
-        // dh::Arg arg;
-        // arg.add_arg('t', "test", "Test for readline");
-        // std::any ret = dh::get_output(&validator, &arg, &rl_fns,"test: ");
-        // try 
-        // {
-        //     auto ret_val = std::any_cast<std::vector<int64_t>>(ret);
-        //     for(auto val : ret_val)
-        //         std::cout << val << std::endl;
-        // } catch (const std::bad_any_cast& e) {
-        // }
-        
-        
-        while(true)
-        {
-        dh::Arg arg;
-        std::vector<std::string> vstr = {"add", "添加"};
-        arg.add_arg('a', vstr, "添加字符串");
-        arg.add_arg('v', "view", "查看字符串");
-        std::cout << "[0] 添加字符串\n" << "[1] 查看字符串\n";
-        char val = dh::GetOutput::get_output(&arg, &fns, "选择选项: ", true);
-        if(val == 'a')
-        {
-            std::any str = dh::GetOutput::get_output(nullptr, &fns, "请输入字符串: ");
-            try {
-                std::string str_val = std::any_cast<std::string>(str);
-                string_list.push_back(str_val);
-            } catch (const std::bad_any_cast& e) {
-                break;
-            }
-        }
-        else if(val == 'v')
-        {
-            for(auto str : string_list)
-                std::cout << str << std::endl;
-        }
-        else if(val == 0) 
-        {
-            break;}
-        }
-        
     }
 }

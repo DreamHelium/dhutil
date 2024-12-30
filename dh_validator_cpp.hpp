@@ -19,6 +19,11 @@
 #define DH_VALIDATOR_CPP_H
 
 #include <glib-object.h>
+#ifdef DH_EDITLINE_USED
+#include <editline/readline.h>
+#include "dh_readline_cpp.hpp"
+#endif
+
 
 #ifdef __cplusplus
 extern "C"{
@@ -26,7 +31,6 @@ extern "C"{
 
 #include <stddef.h>
 #include <stdint.h>
-
 
 typedef char* (*DhReadlineFn)(const char*);
 typedef void (*DhReadlineSetCompletion)(void*);
@@ -91,21 +95,20 @@ namespace dh
         .erase(str.find_last_not_of(' ') + 1);
     }
 
-    template<typename T>
     class Validator
     {
     private:
-        T result;
+        std::any result;
         std::string result_str;
     public:
         virtual bool validate(std::string& str) = 0;
-        T get_result() {return result;}
+        std::any get_result() {return result;}
         std::string get_result(bool placeholder){return result_str;}
-        void set_result(T r) { result = r; }
+        void set_result(std::any r) { result = r; }
     };
 
     template<typename T>
-    class RangeValidator : public Validator<T>
+    class RangeValidator : public Validator
     {
     private:
         T min;
@@ -144,7 +147,7 @@ namespace dh
         }
     };
 
-    class RegexValidator : public Validator<std::regex>
+    class RegexValidator : public Validator
     {
         private:
         std::regex regex;
@@ -166,7 +169,7 @@ namespace dh
     };
 
     template<typename T>
-    class VectorValidator : public Validator<std::vector<T>>
+    class VectorValidator : public Validator
     {
         private:
         char delim;
@@ -303,7 +306,10 @@ namespace dh
                     auto single_range = std::get<std::vector<T>>(ranges);
                     RangeValidator<T> validator(single_range[0], single_range[1]);
                     if(validator.validate(single_str))
-                        val.push_back(validator.get_result());
+                    {
+                        T r = std::any_cast<T>(validator.get_result());
+                        val.push_back(r);
+                    }
                     else return false;
                 }
                 this->set_result(val);
@@ -322,7 +328,10 @@ namespace dh
                 {
                     RangeValidator<T> validator(min_range[i], max_range[i]);
                     if(validator.validate(split_str[i]))
-                        val.push_back(validator.get_result());
+                    {
+                        T r = std::any_cast<T>(validator.get_result());
+                        val.push_back(r);
+                    }
                     else return false;
                 }
                 this->set_result(val);
@@ -442,12 +451,10 @@ namespace dh
         {
             package_name = str;
         }
-        template<typename T>
-        static std::any get_output(Validator<T>* validator, Arg* arg, DhReadlineFns* fns, const char* prompt);
+        static std::any get_output(Validator* validator, Arg* arg, DhReadlineFns* fns, const char* prompt);
         static std::any get_output(Arg* arg, DhReadlineFns* fns, const char* prompt)
         {
-            Validator<int>* ptr = nullptr;
-            return get_output(ptr, arg, fns, prompt);
+            return get_output(nullptr, arg, fns, prompt);
         }
         static char get_output(Arg* arg, DhReadlineFns* fns, const char* prompt, bool use_validator)
         {

@@ -22,6 +22,9 @@
 
 static dh::Arg* arg = nullptr;
 
+extern "C"
+{
+
 void dhutil_set_completion(void* args)
 {
     arg = dynamic_cast<dh::Arg*>((dh::Arg*)args);
@@ -109,7 +112,7 @@ void init_readline(const char* name)
     rl_attempted_completion_function = dhutil_completion;
 }
 
-
+}
 
 
 

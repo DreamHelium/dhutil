@@ -143,6 +143,27 @@ gboolean dh_str_array_find_repeated(DhStrArray* arr, const char* str)
     return FALSE;
 }
 
+char** dh_str_array_dup_to_plain(DhStrArray* arr)
+{
+    char** ret = dh_new(arr->num + 1, char*);
+    for(int i = 0 ; i < arr->num && ret; i++)
+    {
+        ret[i] = dh_strdup(arr->val[i]);
+    }
+    if(ret) ret[arr->num] = NULL;
+    return ret;
+}
+
+void dh_str_array_free_plain(char** strv)
+{
+    char** strv_d = strv;
+    for(; *strv_d && strv_d ; strv_d++)
+    {
+        free(*strv_d);
+    }
+    free(strv);
+}
+
 void dh_str_array_free(DhStrArray *arr)
 {
     if(arr)

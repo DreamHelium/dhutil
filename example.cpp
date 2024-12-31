@@ -1,9 +1,6 @@
-#define DH_EDITLINE_USED
 #include "dh_validator_cpp.hpp"
 #include <any>
 #include <iostream>
-
-
 
 static void test1()
 {

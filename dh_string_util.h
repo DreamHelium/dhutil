@@ -39,6 +39,8 @@ int         dh_str_array_add_str(DhStrArray** arr ,const char* str);
 gboolean    dh_str_array_find_repeated(DhStrArray* arr, const char* str);
 guint       dh_str_array_find_char(DhStrArray* arr, char key);
 void        dh_str_array_free(DhStrArray* arr);
+char**      dh_str_array_dup_to_plain(DhStrArray* arr); /* malloc'd */
+void        dh_str_array_free_plain(char** strv);
 gboolean    dh_str_find_char(const char* str, char find_char);
 
 /** Use dh_getdelim */

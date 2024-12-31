@@ -19,6 +19,10 @@ pkg_search_module(GIO REQUIRED gio-2.0)
 # Replace Readline with libedit
 pkg_search_module(el REQUIRED libedit)
 
+if(${el_FOUND})
+    add_definitions(-DDH_EDITLINE_USED)
+endif()
+
 message(${el_LIBRARIES})
 
 set(DHUTIL_LIB dhutil)

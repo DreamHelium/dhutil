@@ -50,9 +50,11 @@ void dh_set_package_name(const char* str);
 void* dh_int_validator_new(int64_t min, int64_t max, int base);
 void* dh_arg_new();
 void dh_arg_add_arg(void* arg, char c, const char* str, const char* description);
+void dh_arg_add_arg_multi(void* arg, char c, char* const* strv, const char* description);
 void dh_int_validator_free(void* ptr);
 void dh_arg_free(void* ptr);
 void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val);
+void dh_get_output_arg(void* arg, const char* prompt, gboolean add_validator, GValue* val);
 
 #ifdef DH_EDITLINE_USED
 static DhReadlineFns fns = {readline, dhutil_set_completion, add_history, init_readline};
@@ -368,12 +370,35 @@ namespace dh
             arg_fullname afn(1, fn);
             add_arg(arg, afn, description);
         }
+        std::string get_argument()
+        {
+            std::string ret = " [";
+            for(int i = 0 ; i < args.size() ; i++)
+            {
+                std::string arg_str;
+                char c = args[i];
+                if(i == 0) c = toupper(c);
+                arg_str.assign(1, c);
+                ret += arg_str;
+                ret += "/";
+            }
+            ret += "?]: ";
+            return ret;
+        }
         bool validate(std::string& str)
         {
             for(int i = 0 ; i < args.size() ; i++)
             {
                 auto c = args[i];
                 std::string c_s;
+                c_s.assign(1, c);
+                if(str == c_s)
+                {
+                    arg_pos = i;
+                    return true;
+                }
+                c = toupper(c);
+                c_s.clear();
                 c_s.assign(1, c);
                 if(str == c_s)
                 {

@@ -22,6 +22,7 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <vector>
 
 std::vector<std::string> string_list;
 
@@ -59,8 +60,10 @@ namespace dh{
             if(fns->set_completion) fns->set_completion((void*)arg);
             if(fns->init) fns->init(package_name);
             
-            std::any empty_any;
-            char* get_str = fns->readline_fn(prompt);
+            std::string new_prompt = prompt;
+            if(arg) new_prompt += arg->get_argument();
+
+            char* get_str = fns->readline_fn(new_prompt.c_str());
             std::string str;
             if(get_str) str = get_str;
             if(fns->add_history && get_str) fns->add_history(get_str);
@@ -140,6 +143,18 @@ extern "C"
             args->add_arg(c, str, description);
     }
 
+    void dh_arg_add_arg_multi(void* arg, char c, char* const* strv, const char* description)
+    {
+        dh::Arg* args = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
+        if(args)
+        {
+            std::vector<std::string> string_list;
+            for(; strv && *strv ; strv++)
+                string_list.push_back(*strv);
+            args->add_arg(c, string_list, description);
+        }
+    }
+
     void dh_int_validator_free(void* ptr)
     {
         dh::RangeValidator<int64_t>* validator = dynamic_cast<dh::RangeValidator<int64_t>*>((dh::RangeValidator<int64_t>*)ptr);
@@ -181,6 +196,12 @@ extern "C"
             g_value_init(value, G_TYPE_STRING);
             g_value_set_string(value, str.c_str());
         } catch (const std::bad_any_cast& e) { }
+        try 
+        {
+            char c = std::any_cast<char>(o_val);
+            g_value_init(value, G_TYPE_UCHAR);
+            g_value_set_uchar(value, c);
+        } catch (const std::bad_any_cast& e) { }
     }
 
     void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val)
@@ -188,6 +209,13 @@ extern "C"
         dh::Validator* v = dynamic_cast<dh::Validator*>((dh::Validator*)validator);
         dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
         std::any ret = dh::GetOutput::get_output(v, a, &fns, prompt);
+        set_value(ret, val);
+    }
+
+    void dh_get_output_arg(void* arg, const char* prompt, gboolean add_validator, GValue* val)
+    {
+        dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
+        char ret = dh::GetOutput::get_output(a, &fns, prompt, add_validator);
         set_value(ret, val);
     }
 }

@@ -56,12 +56,6 @@ void dh_arg_free(void* ptr);
 void dh_get_output(void* validator, void* arg, const char* prompt, GValue* val);
 void dh_get_output_arg(void* arg, const char* prompt, gboolean add_validator, GValue* val);
 
-#ifdef DH_EDITLINE_USED
-static DhReadlineFns fns = {readline, dhutil_set_completion, add_history, init_readline};
-#else
-static DhReadlineFns fns = {cpp_get_line, NULL, NULL, NULL};
-#endif
-
 #ifdef __cplusplus
 }
 #endif
@@ -103,7 +97,7 @@ namespace dh
         std::any result;
         std::string result_str;
     public:
-        virtual bool validate(std::string& str) = 0;
+        virtual bool validate(std::string str) = 0;
         std::any get_result() {return result;}
         std::string get_result(bool placeholder){return result_str;}
         void set_result(std::any r) { result = r; }
@@ -132,7 +126,7 @@ namespace dh
             else return false;
         }
         int get_base(){ return base; }
-        bool validate(std::string& str) override
+        bool validate(std::string str) override
         {
             string_strip(str);
             char* end_ptr;
@@ -297,7 +291,7 @@ namespace dh
                 return true;
             }
         }
-        bool validate(std::string& str) override
+        bool validate(std::string str) override
         {
             auto split_str = string_split(str, delim);
             if(same_range)
@@ -385,8 +379,9 @@ namespace dh
             ret += "?]: ";
             return ret;
         }
-        bool validate(std::string& str)
+        bool validate(std::string str)
         {
+            string_strip(str);
             for(int i = 0 ; i < args.size() ; i++)
             {
                 auto c = args[i];
@@ -464,8 +459,9 @@ namespace dh
     class GetOutput
     {
         private:
-        
+        static DhReadlineFns fns;
         public:
+        
         static std::string err_message;
         static const char* package_name;
         static void change_err_message(std::string str)
@@ -477,9 +473,17 @@ namespace dh
             package_name = str;
         }
         static std::any get_output(Validator* validator, Arg* arg, DhReadlineFns* fns, const char* prompt);
+        static std::any get_output(Validator* validator, Arg* arg, const char* prompt)
+        {
+            return get_output(validator, arg, &fns, prompt);
+        }
         static std::any get_output(Arg* arg, DhReadlineFns* fns, const char* prompt)
         {
             return get_output(nullptr, arg, fns, prompt);
+        }
+        static std::any get_output(Arg* arg, const char* prompt)
+        {
+            return get_output(arg, &fns, prompt);
         }
         static char get_output(Arg* arg, DhReadlineFns* fns, const char* prompt, bool use_validator)
         {
@@ -502,14 +506,28 @@ namespace dh
             }
             
         }
+        static char get_output(Arg* arg, const char* prompt, bool use_validator)
+        {
+            return get_output(arg, &fns, prompt, use_validator);
+        }
         static std::any get_output(DhReadlineFns* fns, const char* prompt)
         {
-            return get_output(fns, prompt);
+            return get_output(nullptr, nullptr, fns, prompt);
+        }
+        static std::any get_output(const char* prompt)
+        {
+            return get_output(&fns, prompt);
         }
     };
 
     inline std::string GetOutput::err_message = "Validate error!";
     inline const char* GetOutput::package_name = "dhutil";
+
+    #ifdef DH_EDITLINE_USED
+    inline DhReadlineFns GetOutput::fns = {readline, dhutil_set_completion, add_history, init_readline};
+    #else
+    inline DhReadlineFns GetOutput::fns = {cpp_get_line, NULL, NULL, NULL};
+    #endif
 }
 
 #endif /* __cplusplus */

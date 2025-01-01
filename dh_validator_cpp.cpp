@@ -23,6 +23,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 std::vector<std::string> string_list;
 
@@ -93,8 +94,8 @@ namespace dh{
                 return str;
             else return nullptr;
         }
-        std::cerr << "No readline function specified!";
-        return nullptr;
+        std::cerr << "No readline function specified!" << std::endl;
+        throw std::runtime_error("No readline function specified!");
     }
 }
 
@@ -208,14 +209,14 @@ extern "C"
     {
         dh::Validator* v = dynamic_cast<dh::Validator*>((dh::Validator*)validator);
         dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
-        std::any ret = dh::GetOutput::get_output(v, a, &fns, prompt);
+        std::any ret = dh::GetOutput::get_output(v, a, prompt);
         set_value(ret, val);
     }
 
     void dh_get_output_arg(void* arg, const char* prompt, gboolean add_validator, GValue* val)
     {
         dh::Arg* a = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
-        char ret = dh::GetOutput::get_output(a, &fns, prompt, add_validator);
+        char ret = dh::GetOutput::get_output(a, prompt, add_validator);
         set_value(ret, val);
     }
 }

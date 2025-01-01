@@ -9,7 +9,7 @@ static void test1()
     validator.add_range(-1, 200);
     dh::Arg arg;
     arg.add_arg('t', "test", "Test for readline");
-    std::any ret = dh::GetOutput::get_output(&validator, &arg, &fns,"test: ");
+    std::any ret = dh::GetOutput::get_output(&validator, &arg, "test: ");
     try 
     {
         auto ret_val = std::any_cast<std::vector<int64_t>>(ret);
@@ -32,10 +32,10 @@ static void test2()
     arg.add_arg('a', vstr, "添加字符串");
     arg.add_arg('v', "view", "查看字符串");
     std::cout << "[0] 添加字符串\n" << "[1] 查看字符串\n";
-    char val = dh::GetOutput::get_output(&arg, &fns, "选择选项: ", true);
+    char val = dh::GetOutput::get_output(&arg, "选择选项: ", true);
     if(val == 'a')
     {
-        std::any str = dh::GetOutput::get_output(nullptr, &fns, "请输入字符串: ");
+        std::any str = dh::GetOutput::get_output("请输入字符串: ");
         try {
             std::string str_val = std::any_cast<std::string>(str);
             string_list.push_back(str_val);
@@ -54,16 +54,23 @@ static void test2()
     }
 }
 
+void test3()
+{
+        dh::GetOutput::get_output((DhReadlineFns*)nullptr, nullptr);
+}
+
 int main()
 {
     std::cout << "[0] Regular test\n";
     std::cout << "[1] Test with Chinese\n";
-    dh::RangeValidator<int64_t> validator(0, 1);
-    std::any ret = dh::GetOutput::get_output(&validator, nullptr, &fns, "Choose a example to show: ");
+    std::cout << "[2] No readline excpetion\n";
+    dh::RangeValidator<int64_t> validator(0, 2);
+    std::any ret = dh::GetOutput::get_output(&validator, nullptr, "Choose a example to show: ");
     try 
     {
         int64_t val = std::any_cast<int64_t>(ret);
         if(val == 0) test1();
         if(val == 1) test2();
+        if(val == 2) test3();
     } catch (const std::bad_any_cast& e) { return -1; }
 }

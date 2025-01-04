@@ -10,7 +10,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(DHUTIL_VERSION_SO 0)
 
-set(CURSES_NEED_WIDE ON)
+#set(CURSES_NEED_WIDE ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 
 find_package(Gettext)
 find_package(PkgConfig)
@@ -39,6 +42,7 @@ file(GLOB HEADERS
     dh_mt_table.h
     dh_validator_cpp.hpp
     dh_readline_cpp.hpp
+    dh_bit.hpp
 )
 set(SOURCES
     dh_string_util.c
@@ -47,6 +51,7 @@ set(SOURCES
     dh_mt_table.c
     dh_validator_cpp.cpp
     dh_readline_cpp.cpp
+    dh_bit.cpp
 )
 
 add_library(dhutil SHARED "${HEADERS}" "${SOURCES}")

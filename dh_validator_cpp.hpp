@@ -147,17 +147,16 @@ namespace dh
     {
         private:
         std::regex regex;
-        std::string result;
         public:
         RegexValidator(std::regex r)
         {
             regex = r;
         }
-        bool validate(std::string& str)
+        bool validate(std::string str) override
         {
             if(std::regex_match(str, regex))
             {
-                result = str;
+                set_result(str);
                 return true;
             }
             else return false;

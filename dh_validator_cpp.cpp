@@ -87,7 +87,7 @@ namespace dh{
             else if(validator || arg)
             {
                 std::cerr << err_message << std::endl;
-                if(str.empty()) return nullptr;
+                if(!get_str) return nullptr; /* EOF */
                 continue;
             }
             else if(get_str)

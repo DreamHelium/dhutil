@@ -133,13 +133,15 @@ namespace dh
             auto ret = get_num_internal<T>(str.c_str(), &end_ptr, base);
             if(*end_ptr == 0 && *str.c_str() != 0)
             {
-                this->set_result(ret);
-                return true;
+                if(validate(ret))
+                {
+                    this->set_result(ret);
+                    return true;
+                }
+                else return false;
             }
             else
-            {
                 return false;
-            }
         }
     };
 

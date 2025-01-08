@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define dh_new(len, type) malloc(len * sizeof(type))
+#define dh_new(len, type) malloc((len) * sizeof(type))
 
 char *dh_strdup(const char *o_str)
 {

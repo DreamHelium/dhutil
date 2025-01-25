@@ -15,8 +15,8 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-#ifndef DH_BIT_H
-#define DH_BIT_H
+#ifndef DH_BIT_HPP
+#define DH_BIT_HPP
 
 #include <stdint.h>
 
@@ -28,12 +28,14 @@ extern "C" {
  * Thus I might not move this to pure C unless I found a better way
  * ~Maybe will move the part.~ */
 void* dh_vector_bool_new();
-void dh_vector_bool_append_bit(void* v, int len, int value);
+void  dh_vector_bool_free(void* v);
+void dh_vector_bool_append_bit(void* v, int len, int64_t value);
 int64_t dh_vector_bool_get_part_from_top(void* v, int start, int end);
+int64_t dh_vector_bool_get_part_by_bit(void* v, int start, int bit);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* DH_BIT_H */
+#endif /* DH_BIT_HPP */

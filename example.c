@@ -13,8 +13,9 @@ int main()
     //     printf("%ld\n", g_value_get_int64(&val));
     // }
     void* v = dh_vector_bool_new();
-    dh_vector_bool_append_bit(v, 1, 0b1);
-    int64_t val = dh_vector_bool_get_part_from_top(v, 0, 0);
+    dh_vector_bool_append_bit(v, 7, 0b1111111);
+    dh_vector_bool_append_bit(v, 7, 0);
+    int64_t val = dh_vector_bool_get_part_by_bit(v, 0, 14);
     printf("%ld\n", val);
     return 0;
 }

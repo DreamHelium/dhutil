@@ -19,29 +19,41 @@
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
+#include <glib.h>
 
-static void push_back_bit(std::vector<bool>&b, int bit_len, int val)
+static void push_back_bit(std::vector<bool>&b, int bit_len, int64_t val)
 {
     /* For example bit_len = 4 aka 1111 */
+    /* abcd -> [0]d [1]c [2]b [3]a */
     for(int i = bit_len - 1  ; i >= 0 ; i--)
     {
-        int and_val = 1 << i;
-        int res_val = val & and_val;
-        b.push_back(res_val == and_val);
+        int64_t and_val = 1 << i;
+        int64_t res_val = val & and_val;
+        bool value = (and_val == res_val);
+        b.push_back(value);
     }
 }
 
 static int64_t get_part(std::vector<bool> b, int s, int e)
 {
+    int size = b.size();
     if(e - s > 63 || s > e)
         throw std::bad_function_call();
     if(e >= b.size())
         throw std::range_error("Out of range!");
     int64_t ret = 0;
+    // std::bitset<64> bits;
+    // for(int i = s ; i < (s + 64) ; i++)
+    // {
+    //     int j = 63 + s - i;
+    //     if(i <= e)
+    //         bits[j] = b[i];
+    // }
     for(int i = s ; i <= e ; i++)
     {
-        int j = i - s; /* start from 0 */
-        ret |= ((int64_t)b.at(i) << (63 - j));
+        int j = 63 + s - i; /* start from 0 */
+        int64_t m = b[i];
+        ret |= (m << j);
     }
     return ret;
 }
@@ -53,7 +65,13 @@ extern "C"
         return (void*) new std::vector<bool>;
     }
 
-    void dh_vector_bool_append_bit(void* v, int len, int value)
+    void dh_vector_bool_free(void* v)
+    {
+        std::vector<bool>* vec = dynamic_cast<std::vector<bool>*>((std::vector<bool>*)v);
+        delete vec;
+    }
+
+    void dh_vector_bool_append_bit(void* v, int len, int64_t value)
     {
         std::vector<bool>* vec = dynamic_cast<std::vector<bool>*>((std::vector<bool>*)v);
         push_back_bit(*vec, len, value);
@@ -63,5 +81,10 @@ extern "C"
     {
         std::vector<bool>* vec = dynamic_cast<std::vector<bool>*>((std::vector<bool>*)v);
         return get_part(*vec, start, end);
+    }
+
+    int64_t dh_vector_bool_get_part_by_bit(void* v, int start, int bit)
+    {
+        return dh_vector_bool_get_part_from_top(v, start, start + bit - 1);
     }
 }

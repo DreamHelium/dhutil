@@ -21,6 +21,7 @@ find_package(PkgConfig)
 pkg_search_module(GIO REQUIRED gio-2.0)
 # Replace Readline with libedit
 pkg_search_module(el REQUIRED libedit)
+pkg_search_module(CURL REQUIRED libcurl)
 
 if(${el_FOUND})
     add_definitions(-DDH_EDITLINE_USED)
@@ -60,7 +61,7 @@ target_include_directories(dhutil
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         "${GIO_INCLUDE_DIRS}")
 
-target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${el_LIBRARIES})
+target_link_libraries(dhutil PUBLIC ${GIO_LIBRARIES} ${el_LIBRARIES} ${CURL_LIBRARIES})
 
 install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")

@@ -18,9 +18,19 @@
 #include "dh_string_util.h"
 #include "dh_file_util.h"
 #include "dh_list_util.h"
+#include "glib.h"
 #include <stdlib.h>
 #include <string.h>
 #include <gio/gio.h>
+
+typedef struct DhDownloadSt
+{
+    const char* uri;
+    const char* dest;
+    DhProgressCallback* progress_callback;
+    gpointer data;
+    gboolean rewrite_data;
+} DhDownloadSt;
 
 static int internal_strcmp(gconstpointer a, gconstpointer b)
 {
@@ -257,4 +267,81 @@ char* dh_file_get_current_program_dir(const char* arg_zero)
     char* dir = g_path_get_dirname(full_dir);
     g_free(full_dir);
     return dir;
+}
+
+int dh_file_download_file(const char *uri, const char *dir, gboolean rewrite_file)
+{
+    return dh_file_download_full_arg(uri, dir, NULL, NULL, rewrite_file);
+}
+
+static int progress_callback(void *clientp,
+                                curl_off_t dltotal,
+                                curl_off_t dlnow,
+                                curl_off_t ultotal,
+                                curl_off_t ulnow)
+{
+    printf("%ld/%ld\n", dlnow, dltotal);
+    return 0; /* all is good */
+}
+
+
+int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallback callback, gpointer data, gboolean rewrite_file)
+{
+    CURL* curl = curl_easy_init();
+    if(curl)
+    {
+        /* Split and get uri file name */
+        char** uri_struct = g_strsplit(uri, "/", -1);
+        int uri_struct_len = 0;
+        for(; uri_struct[uri_struct_len] ;uri_struct_len++);
+        char* uri_file_name = g_strdup(uri_struct[uri_struct_len - 1]);
+        g_strfreev(uri_struct);
+
+        gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dest, uri_file_name, NULL);
+        g_free(uri_file_name);
+
+        if(!rewrite_file)
+        {
+            /* Check whether the file exists */
+            if(dh_file_exist(dir_path))
+            {
+                g_free(dir_path);
+                return -1;
+            }
+        }
+
+        FILE* f = fopen(dir_path, "wb");
+        CURLcode res;
+        curl_easy_setopt(curl, CURLOPT_URL, uri);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
+        if(data)
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, data);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        if(!callback)
+            callback = progress_callback;
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, callback);
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        fclose(f);
+
+        g_free(dir_path);
+        return res;
+    }
+    else return -1;
+}
+
+static void download_func(GTask* task, gpointer source_object, gpointer task_data, GCancellable* cancellable)
+{
+    DhDownloadSt* data = task_data;
+    int ret = dh_file_download_full_arg(data->uri, data->dest, data->progress_callback, data->data, data->rewrite_data);
+    g_task_return_int(task, ret);
+}
+
+void dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback)
+{
+    DhDownloadSt full_data = {uri, dest, progress_callback, data, rewrite_file};
+    GTask* task = g_task_new(NULL, NULL, finish_callback, NULL);
+    g_task_set_task_data(task, &full_data, NULL);
+    g_task_run_in_thread(task, download_func);
+    g_object_unref(task);
 }

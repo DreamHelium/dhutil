@@ -290,15 +290,9 @@ int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallb
     CURL* curl = curl_easy_init();
     if(curl)
     {
-        /* Split and get uri file name */
-        char** uri_struct = g_strsplit(uri, "/", -1);
-        int uri_struct_len = 0;
-        for(; uri_struct[uri_struct_len] ;uri_struct_len++);
-        char* uri_file_name = g_strdup(uri_struct[uri_struct_len - 1]);
-        g_strfreev(uri_struct);
+        char* uri_file_name = strrchr(uri, '/') + 1;
 
         gchar* dir_path = g_build_path(G_DIR_SEPARATOR_S, dest, uri_file_name, NULL);
-        g_free(uri_file_name);
 
         if(!rewrite_file)
         {
@@ -310,13 +304,26 @@ int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallb
             }
         }
 
-        FILE* f = fopen(dir_path, "wb");
+        gchar* tmp_file = g_strconcat(uri_file_name, ".dhtmpf", NULL);
+
+        gchar* tmp_dir_path = g_build_path(G_DIR_SEPARATOR_S, g_get_tmp_dir(), tmp_file, NULL);
+        g_free(tmp_file);
+
+        if(!dh_file_exist(tmp_dir_path))
+            dh_file_create(tmp_dir_path, TRUE);
+        FILE* f = fopen(tmp_dir_path, "r+b");
+        fseek(f, 0, SEEK_END);
+        long pos = ftell(f);
+        printf("pos: %ld\n", pos);
+        // fseek(f, 0, SEEK_SET);
         CURLcode res;
         curl_easy_setopt(curl, CURLOPT_URL, uri);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
         if(data)
             curl_easy_setopt(curl, CURLOPT_XFERINFODATA, data);
         curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, pos);
+
         if(!callback)
             callback = progress_callback;
         curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, callback);
@@ -324,7 +331,15 @@ int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallb
         curl_easy_cleanup(curl);
         fclose(f);
 
+        if(res == 0)
+        {
+            dh_file_copy(tmp_dir_path, dir_path, G_FILE_COPY_OVERWRITE);
+            GFile* file = g_file_new_for_path(tmp_dir_path);
+            g_file_delete(file, NULL, NULL);
+        }
         g_free(dir_path);
+        g_free(tmp_dir_path);
+
         return res;
     }
     else return -1;

@@ -29,6 +29,8 @@ extern "C"{
 #endif
 
 GList*  dh_file_list_create(const char* pos);
+GList*  dh_file_list_create_full(const char* pos, gboolean with_dir);
+GList*  dh_file_list_create_recursive(const char* pos);
 GList*  dh_file_list_search_in_dir(const char* pos, const char* name);
 gboolean dh_file_exist(const char* filepos);
 /* Unlike GIO's create, it just create a file */
@@ -51,6 +53,7 @@ int      dh_file_download_file(const char* uri, const char* dir, gboolean rewrit
 int      dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallback callback, gpointer data, gboolean rewrite_file);
 void     dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback);
 char*    dh_file_get_current_program_dir(const char* arg_zero);
+void     dh_file_rm_file(const char* pos);
 
 #ifdef __cplusplus
 }

@@ -19,6 +19,7 @@
 #include "dh_file_util.h"
 #include "dh_list_util.h"
 #include "glib.h"
+#include "glibconfig.h"
 #include <stdlib.h>
 #include <string.h>
 #include <gio/gio.h>
@@ -37,6 +38,11 @@ static int internal_strcmp(gconstpointer a, gconstpointer b)
     return strcmp(a, b);
 }
 
+static int minus_strcmp(gconstpointer a, gconstpointer b)
+{
+    return -strcmp(a, b);
+}
+
 static int strstr_to_int(gconstpointer element, gconstpointer user_data)
 {
     char* ret = strstr(element, user_data);
@@ -44,7 +50,7 @@ static int strstr_to_int(gconstpointer element, gconstpointer user_data)
     else return -1;
 }
 
-GList* dh_file_list_create(const char* pos)
+GList*  dh_file_list_create_full(const char* pos, gboolean with_dir)
 {
     GFile* dir = g_file_new_for_path(pos);
     GError* err = NULL;
@@ -61,7 +67,15 @@ GList* dh_file_list_create(const char* pos)
     GFileInfo* info = NULL;
     while((info = g_file_enumerator_next_file(gfe, NULL, &err)) != NULL)
     {
-        list = g_list_prepend(list, dh_strdup(g_file_info_get_name(info)));
+        const char* filename = g_file_info_get_name(info);
+        if(!with_dir)
+            list = g_list_prepend(list, dh_strdup(g_file_info_get_name(info)));
+        else
+        {
+            char* new_filename = g_build_path(G_DIR_SEPARATOR_S, pos, filename, NULL);
+            list = g_list_prepend(list, dh_strdup(new_filename));
+            g_free(new_filename);
+        }
         g_object_unref(info);
     }
     g_file_enumerator_close(gfe, NULL, &err);
@@ -69,6 +83,31 @@ GList* dh_file_list_create(const char* pos)
     g_object_unref(gfe);
     list = g_list_sort(list, internal_strcmp);
     return list;
+}
+
+GList* dh_file_list_create(const char* pos)
+{
+    return dh_file_list_create_full(pos, FALSE);
+}
+
+GList* dh_file_list_create_recursive(const char* pos)
+{
+    GList* ret = dh_file_list_create_full(pos, TRUE);
+    GList* ret_d = ret;
+    for(; ret_d ; ret_d = ret_d->next)
+    {
+        char* filename = ret_d->data;
+        if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+        {
+            GList* add_to_list = dh_file_list_create_recursive(filename);
+            GList* tmp_list = add_to_list;
+            for(; tmp_list ; tmp_list = tmp_list->next)
+                ret = g_list_prepend(ret, dh_strdup(tmp_list->data));
+            g_list_free_full(add_to_list, free);
+        }
+    }
+    ret = g_list_sort(ret, minus_strcmp);
+    return ret;
 }
 
 GList *dh_file_list_search_in_dir(const char *pos, const char *name)
@@ -359,4 +398,11 @@ void dh_file_download_async(const char* uri, const char* dest, DhProgressCallbac
     g_task_set_task_data(task, &full_data, NULL);
     g_task_run_in_thread(task, download_func);
     g_object_unref(task);
+}
+
+void dh_file_rm_file(const char* pos)
+{
+    GFile* file = g_file_new_for_path(pos);
+    g_file_delete(file, NULL, NULL);
+    g_object_unref(file);
 }

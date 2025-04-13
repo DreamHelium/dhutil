@@ -56,8 +56,8 @@ target_link_libraries(dhutil_base PUBLIC ${GIO_LIBRARIES} ${CURL_LIBRARIES})
 # message("${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 # message("${CMAKE_LIBRARY_PATH}")
 
-# add_executable(example example.c)
-# target_link_libraries(example PUBLIC dhutil_base)
+add_executable(example example.c)
+target_link_libraries(example PUBLIC dhutil_base)
 
 # install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
 # install(TARGETS "${DHUTIL_LIB}"

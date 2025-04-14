@@ -393,9 +393,14 @@ static void download_func(GTask* task, gpointer source_object, gpointer task_dat
 
 void dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback)
 {
-    DhDownloadSt full_data = {uri, dest, progress_callback, data, rewrite_file};
+    DhDownloadSt* full_data = g_new0(DhDownloadSt, 1);
+    full_data->uri = uri;
+    full_data->dest = dest;
+    full_data->progress_callback = progress_callback;
+    full_data->data = data;
+    full_data->rewrite_data = rewrite_file;
     GTask* task = g_task_new(NULL, NULL, finish_callback, NULL);
-    g_task_set_task_data(task, &full_data, NULL);
+    g_task_set_task_data(task, full_data, g_free);
     g_task_run_in_thread(task, download_func);
     g_object_unref(task);
 }

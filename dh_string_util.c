@@ -37,6 +37,17 @@ char *dh_strdup(const char *o_str)
 #endif
 }
 
+static char* strcpy_p(char* buf, const char* str)
+{
+#if _POSIX_C_SOURCE >= 200809L
+    return stpcpy(buf, str);
+#else
+    strcpy(buf, str);
+    for(; *buf ; buf++);
+    return buf;
+#endif
+}
+
 char* dh_str_array_cat(DhStrArray* arr)
 {
     int len = 0;
@@ -46,7 +57,7 @@ char* dh_str_array_cat(DhStrArray* arr)
         for(int i = 0 ; i < arr->num ; i++)
             len += strlen( (arr->val)[i] );
 
-        char* out = dh_new((len + strlen("")), char);
+        char* out = dh_new((len + sizeof("")), char);
         char* out_d = out;
 
         if( out )
@@ -64,6 +75,32 @@ char* dh_str_array_cat(DhStrArray* arr)
         }
         else return NULL;
 
+    }
+    else return NULL;
+}
+
+char* dh_str_array_cat_with_split(DhStrArray* arr, const char* const split)
+{
+    if(arr)
+    {
+        int len = 0;
+        for(int i = 0 ; i < arr->num ; i++)
+        {
+            len += strlen(arr->val[i]);
+            if(i != (arr->num - 1))
+                len += strlen(split);
+        }
+        len += 1;
+        char* ret = dh_new(len, char);
+        char* ret_p = ret;
+
+        for(int i = 0 ; i < arr->num ; i++)
+        {
+            ret_p = strcpy_p(ret_p, arr->val[i]);
+            if(i != (arr->num - 1))
+                ret_p = strcpy_p(ret_p, split);
+        }
+        return ret;
     }
     else return NULL;
 }
@@ -173,6 +210,26 @@ void dh_str_array_free(DhStrArray *arr)
         g_free(arr->val);
         g_free(arr);
     }
+}
+
+DhStrArray* dh_str_array_cat_str_array(DhStrArray* arr1, DhStrArray* arr2, const char* const split)
+{
+    if(arr1->num != arr2->num)
+        return NULL;
+    DhStrArray* ret = NULL;
+    for(int i = 0 ; i < arr1->num ; i++)
+    {
+        int len = strlen(arr1->val[i]) + strlen(arr2->val[i]) + strlen(split) + 1;
+        char* buf = dh_new(len, char);
+        char* buf_p = buf;
+        buf_p = strcpy_p(buf_p, arr1->val[i]);
+        buf_p = strcpy_p(buf_p, split);
+        buf_p = strcpy_p(buf_p, arr2->val[i]);
+
+        dh_str_array_add_str(&ret, buf);
+        free(buf);
+    }
+    return ret;
 }
 
 int dh_getline(char** input, size_t* n, FILE* stream)

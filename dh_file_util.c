@@ -353,7 +353,6 @@ int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallb
         FILE* f = fopen(tmp_dir_path, "r+b");
         fseek(f, 0, SEEK_END);
         long pos = ftell(f);
-        printf("pos: %ld\n", pos);
         // fseek(f, 0, SEEK_SET);
         CURLcode res;
         curl_easy_setopt(curl, CURLOPT_URL, uri);
@@ -391,7 +390,7 @@ static void download_func(GTask* task, gpointer source_object, gpointer task_dat
     g_task_return_int(task, ret);
 }
 
-void dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback)
+void dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback, gpointer callback_data)
 {
     DhDownloadSt* full_data = g_new0(DhDownloadSt, 1);
     full_data->uri = uri;
@@ -399,7 +398,7 @@ void dh_file_download_async(const char* uri, const char* dest, DhProgressCallbac
     full_data->progress_callback = progress_callback;
     full_data->data = data;
     full_data->rewrite_data = rewrite_file;
-    GTask* task = g_task_new(NULL, NULL, finish_callback, NULL);
+    GTask* task = g_task_new(NULL, NULL, finish_callback, callback_data);
     g_task_set_task_data(task, full_data, g_free);
     g_task_run_in_thread(task, download_func);
     g_object_unref(task);

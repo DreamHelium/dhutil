@@ -128,14 +128,35 @@ static guint find_char(const char* str, char key)
     return i;
 }
 
-guint dh_str_array_find_char(DhStrArray* arr, char key)
+guint
+dh_str_array_find_char (DhStrArray *arr, char key)
 {
     guint char_num = 0;
-    for(int i = 0 ; i < arr->num ; i++)
-    {
-        char_num += find_char(arr->val[i], key);
-    }
+    for (int i = 0; i < arr->num; i++)
+        {
+            char_num += find_char (arr->val[i], key);
+        }
     return char_num;
+}
+
+int *
+dh_str_array_find_include_chars (DhStrArray *arr, char *key, int *len)
+{
+    *len = 0;
+    int* ret = NULL;
+    char** arr_val = arr->val;
+    for (int i = 0 ; *arr_val ; arr_val++)
+        {
+            if (strstr(*arr_val, key))
+                {
+                    int real_len = *len + 1;
+                    *len = real_len;
+                    ret = g_realloc(ret, sizeof(int) * real_len);
+                    ret[real_len - 1] = i;
+                }
+            i++;
+        }
+    return ret;
 }
 
 DhStrArray *dh_str_array_init(const char *str)
@@ -170,14 +191,22 @@ int dh_str_array_add_str(DhStrArray **arr, const char *str)
 
 gboolean dh_str_array_find_repeated(DhStrArray* arr, const char* str)
 {
-    if(arr){
-        for(int i = 0 ; i < arr->num; i++)
+    if (dh_str_array_find(arr, str) == -1)
+        return FALSE;
+    return TRUE;
+}
+
+int dh_str_array_find(DhStrArray* arr, const char* str)
+{
+    if (arr)
         {
-            if(g_str_equal((arr->val)[i], str))
-                return TRUE;
+            for(int i = 0 ; i < arr->num; i++)
+                {
+                    if(g_str_equal((arr->val)[i], str))
+                        return i;
+                }
         }
-    }
-    return FALSE;
+    return -1;
 }
 
 char** dh_str_array_dup_to_plain(DhStrArray* arr)

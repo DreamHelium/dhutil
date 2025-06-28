@@ -51,7 +51,7 @@ gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCo
                                gpointer data, GError** error);
 int      dh_file_download_file(const char* uri, const char* dir, gboolean rewrite_file);
 int      dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallback callback, gpointer data, gboolean rewrite_file);
-void     dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback);
+void     dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback, gpointer callback_data);
 char*    dh_file_get_current_program_dir(const char* arg_zero);
 void     dh_file_rm_file(const char* pos);
 

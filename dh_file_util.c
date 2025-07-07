@@ -257,6 +257,8 @@ gboolean dh_file_copy_full_arg(const char* source, const char* dest, GFileCopyFl
 {
     GFile* file_source = g_file_new_for_path(source);
     GFile* file_dest = g_file_new_for_path(dest);
+    if (!g_file_test(dest, G_FILE_TEST_IS_REGULAR))
+        dh_file_create(dest, TRUE);
     gboolean ret = g_file_copy(file_source, file_dest, flags, cancellable, callback, data, error);
     g_object_unref(file_source);
     g_object_unref(file_dest);
@@ -339,6 +341,7 @@ int dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallb
             if(dh_file_exist(dir_path))
             {
                 g_free(dir_path);
+                curl_easy_cleanup(curl);
                 return -1;
             }
         }

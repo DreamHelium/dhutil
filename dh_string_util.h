@@ -37,6 +37,7 @@ char*       dh_str_array_cat(DhStrArray* arr); /* malloc'd */
 char*       dh_str_array_cat_with_split(DhStrArray* arr, const char* const split);
 DhStrArray* dh_str_array_init(const char* str);
 int         dh_str_array_add_str(DhStrArray** arr ,const char* str);
+DhStrArray* dh_str_array_dup(DhStrArray* arr);
 gboolean    dh_str_array_find_repeated(DhStrArray* arr, const char* str);
 int         dh_str_array_find(DhStrArray* arr, const char* str);
 guint       dh_str_array_find_char(DhStrArray* arr, char key);

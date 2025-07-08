@@ -189,6 +189,14 @@ int dh_str_array_add_str(DhStrArray **arr, const char *str)
     }
 }
 
+DhStrArray* dh_str_array_dup(DhStrArray* arr)
+{
+    DhStrArray* ret = NULL;
+    for (int i = 0 ; i < arr->num ; i++)
+        dh_str_array_add_str(&ret, arr->val[i]);
+    return ret;
+}
+
 gboolean dh_str_array_find_repeated(DhStrArray* arr, const char* str)
 {
     if (dh_str_array_find(arr, str) == -1)

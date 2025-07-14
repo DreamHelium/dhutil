@@ -1,6 +1,7 @@
 # 梦氦之工具库
 
 ## 依赖
+
 - `cJSON`
 - `glib2`（包括`GObject`和`GIO`）
 
@@ -27,5 +28,6 @@
 
 ### DhGeneral接口及DhIsoc类（在`dh_generaliface.h`及`dh_general_isoc.h`中）
 
-提供`vprintf`、选项打印和选择器的函数接口，以及一个在ISO C中的参考实现。接口使用GObject对象系统编程，如需自行实现，可参考`dh_general_isoc.c`。
+提供`vprintf`、选项打印和选择器的函数接口，以及一个在ISO C中的参考实现。接口使用GObject对象系统编程，如需自行实现，可参考
+`dh_general_isoc.c`。
 

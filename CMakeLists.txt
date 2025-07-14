@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(dhutil
-	VERSION 0.2.0
-	LANGUAGES C CXX)
+        VERSION 0.2.0
+        LANGUAGES C CXX)
 
 # include(GNUInstallDirs)
-if(NOT DHUTIL_PRE_INCLUDED)
+if (NOT DHUTIL_PRE_INCLUDED)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     set(DHUTIL_VERSION_SO 0)
     set(DHUTIL_PRE_INCLUDED ON PARENT_SCOPE)
@@ -20,12 +20,12 @@ if(NOT DHUTIL_PRE_INCLUDED)
 
     # set(DHUTIL_LIB dhutil)
 
-    if(DHUTIL_BUILD_CLI)
+    if (DHUTIL_BUILD_CLI)
         # Replace Readline with libedit
         pkg_search_module(el REQUIRED libedit)
-        if(${el_FOUND})
+        if (${el_FOUND})
             add_definitions(-DDH_EDITLINE_USED)
-        endif()
+        endif ()
         set(CMAKE_CXX_STANDARD 17)
         set(CLI_HEADERS dh_validator_cpp.hpp dh_readline_cpp.hpp dh_bit.hpp)
         set(CLI_SOURCES dh_validator_cpp.cpp dh_readline_cpp.cpp dh_bit.cpp)
@@ -34,7 +34,7 @@ if(NOT DHUTIL_PRE_INCLUDED)
 
         add_executable(example_cpp example.cpp)
         target_link_libraries(example_cpp PUBLIC dhutil_cli)
-    endif()
+    endif ()
 
     set(BASE_HEADERS dh_string_util.h dh_file_util.h dh_list_util.h dh_mt_table.h)
     set(BASE_SOURCES dh_string_util.c dh_file_util.c dh_list_util.c dh_mt_table.c)
@@ -74,4 +74,4 @@ if(NOT DHUTIL_PRE_INCLUDED)
     # 	VERSION "${PROJECT_VERSION}"
     # )
 
-endif()
+endif ()

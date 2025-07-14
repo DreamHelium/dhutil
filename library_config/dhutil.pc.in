@@ -1,9 +1,9 @@
 libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
-Name: libdhutil
+Name: dhutil
 Version: @PROJECT_VERSION@
 Description: utility for Dream Helium's program
 URL: https://github.com/DreamHelium/dhutil
-Libs: -L${libdir} -ldhutil -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lreadline
-Cflags: -pthread -I${includedir} -I${includedir}/dh
+Libs: -L${libdir} -ldhutil_base -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcurl
+Cflags: -pthread -I${includedir}

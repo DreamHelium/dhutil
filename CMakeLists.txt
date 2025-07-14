@@ -44,14 +44,13 @@ if (NOT DHUTIL_PRE_INCLUDED)
     target_include_directories(dhutil_base PUBLIC ${GIO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(dhutil_base PUBLIC ${GIO_LIBRARIES} ${CURL_LIBRARIES})
 
-    # install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-    # install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-    # install(FILES "dh_list_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-    # install(FILES "dh_validator.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
-    # install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
+     install(FILES "dh_string_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+     install(FILES "dh_file_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+     install(FILES "dh_list_util.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+     install(FILES "dh_mt_table.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 
-     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/libdhutil.pc.in"
-     	"${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" @ONLY)
+     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/dhutil.pc.in"
+     	"${CMAKE_CURRENT_BINARY_DIR}/dhutil.pc" @ONLY)
 
     # message("${CMAKE_INSTALL_FULL_INCLUDEDIR}")
     # message("${CMAKE_LIBRARY_PATH}")

@@ -58,7 +58,7 @@ if (NOT DHUTIL_PRE_INCLUDED)
     add_executable(example example.c)
     target_link_libraries(example PUBLIC dhutil_base)
 
-     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
+     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/dhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
      install(TARGETS "${DHUTIL_LIB}"
      	EXPORT "${DHUTIL_LIB}"
          ARCHIVE DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"

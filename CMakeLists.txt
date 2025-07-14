@@ -4,7 +4,7 @@ project(dhutil
         VERSION 0.2.0
         LANGUAGES C CXX)
 
-# include(GNUInstallDirs)
+include(GNUInstallDirs)
 if (NOT DHUTIL_PRE_INCLUDED)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     set(DHUTIL_VERSION_SO 0)
@@ -18,7 +18,7 @@ if (NOT DHUTIL_PRE_INCLUDED)
     pkg_search_module(GIO REQUIRED gio-2.0)
     pkg_search_module(CURL REQUIRED libcurl)
 
-    # set(DHUTIL_LIB dhutil)
+     set(DHUTIL_LIB dhutil_base)
 
     if (DHUTIL_BUILD_CLI)
         # Replace Readline with libedit
@@ -50,8 +50,8 @@ if (NOT DHUTIL_PRE_INCLUDED)
     # install(FILES "dh_validator.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
     # install(FILES "dhutil.h" DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}/dh")
 
-    # configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/libdhutil.pc.in"
-    # 	"${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" @ONLY)
+     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/libdhutil.pc.in"
+     	"${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" @ONLY)
 
     # message("${CMAKE_INSTALL_FULL_INCLUDEDIR}")
     # message("${CMAKE_LIBRARY_PATH}")
@@ -59,19 +59,19 @@ if (NOT DHUTIL_PRE_INCLUDED)
     add_executable(example example.c)
     target_link_libraries(example PUBLIC dhutil_base)
 
-    # install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
-    # install(TARGETS "${DHUTIL_LIB}"
-    # 	EXPORT "${DHUTIL_LIB}"
-    #     ARCHIVE DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"
-    #     LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"
-    #     RUNTIME DESTINATION "${CMAKE_INSTALL_FULL_BINDIR}"
-    #     INCLUDES DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}"
-    # )
+     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libdhutil.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
+     install(TARGETS "${DHUTIL_LIB}"
+     	EXPORT "${DHUTIL_LIB}"
+         ARCHIVE DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"
+         LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}"
+         RUNTIME DESTINATION "${CMAKE_INSTALL_FULL_BINDIR}"
+         INCLUDES DESTINATION "${CMAKE_INSTALL_FULL_INCLUDEDIR}"
+     )
 
-    # set_target_properties("${DHUTIL_LIB}"
-    # 	PROPERTIES
-    # 	SOVERSION "${DHUTIL_VERSION_SO}"
-    # 	VERSION "${PROJECT_VERSION}"
-    # )
+     set_target_properties("${DHUTIL_LIB}"
+     	PROPERTIES
+     	SOVERSION "${DHUTIL_VERSION_SO}"
+     	VERSION "${PROJECT_VERSION}"
+     )
 
 endif ()

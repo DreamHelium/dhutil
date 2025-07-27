@@ -258,6 +258,20 @@ dh_str_array_find (DhStrArray *arr, const char *str)
     return -1;
 }
 
+void dh_str_array_remove(DhStrArray** arr, const char *str)
+{
+    int pos = dh_str_array_find (*arr, str);
+    if (pos != -1)
+        {
+            g_free((*arr)->val[pos]);
+            for (int i = pos + 1 ; i < (*arr)->num ; i++)
+                (*arr)->val[i - 1] = (*arr)->val[i];
+            (*arr)->num--;
+            if ((*arr)->num == 0)
+                *arr = NULL;
+        }
+}
+
 char **
 dh_str_array_dup_to_plain (DhStrArray *arr)
 {

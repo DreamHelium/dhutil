@@ -38,14 +38,20 @@ set(STRING_SOURCES dh_string_util.c)
 set(FILELIB_HEADERS dh_file_util.h dh_list_util.h)
 set(FILELIB_SOURCES dh_file_util.c dh_list_util.c)
 
+set(TYPE_HEADERS dh_type.h)
+set(TYPE_SOURCES dh_type.c)
+
 add_library(dhutil_file SHARED ${FILELIB_HEADERS} ${FILELIB_SOURCES})
 add_library(dhutil_string SHARED "${STRING_SOURCES}" "${STRING_HEADERS}")
+add_library(dhutil_type SHARED ${TYPE_HEADERS} ${TYPE_SOURCES})
 
 target_include_directories(dhutil_string PUBLIC ${GLIB_INCLUDE_DIRS})
 target_include_directories(dhutil_file PUBLIC ${GIO_INCLUDE_DIRS})
+target_include_directories(dhutil_type PUBLIC ${GLIB_INCLUDE_DIRS})
 
 target_link_libraries(dhutil_string PUBLIC ${GLIB_LIBRARIES})
 target_link_libraries(dhutil_file PUBLIC ${GIO_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(dhutil_type PUBLIC ${GLIB_LIBRARIES} dhutil_string)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/library_config/dhutil_string.pc.in"
         "${CMAKE_CURRENT_BINARY_DIR}/dhutil_string.pc" @ONLY)

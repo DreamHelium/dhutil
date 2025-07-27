@@ -46,6 +46,7 @@ extern "C"
                                  const DhStrArray *arr2,
                                  gboolean ignore_order);
     int dh_str_array_find (DhStrArray *arr, const char *str);
+    void dh_str_array_remove(DhStrArray** arr, const char *str);
     guint dh_str_array_find_char (DhStrArray *arr, char key);
     int *dh_str_array_find_include_chars (DhStrArray *arr, char *key,
                                           int *len);

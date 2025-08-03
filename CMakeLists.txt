@@ -8,15 +8,17 @@ include(GNUInstallDirs)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(DHUTIL_VERSION_SO 0)
+option(DHUTIL_BUILD_CLI OFF)
 
 find_package(Gettext)
 find_package(PkgConfig)
 
 pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_search_module(GIO REQUIRED gio-2.0)
+pkg_search_module(GOBJECT REQUIRED gobject-2.0)
 pkg_search_module(CURL REQUIRED libcurl)
 
-if (DHUTIL_BUILD_CLI)
+if (${DHUTIL_BUILD_CLI})
     # Replace Readline with libedit
     pkg_search_module(el REQUIRED libedit)
     if (${el_FOUND})
@@ -26,10 +28,11 @@ if (DHUTIL_BUILD_CLI)
     set(CLI_HEADERS dh_validator_cpp.hpp dh_readline_cpp.hpp)
     set(CLI_SOURCES dh_validator_cpp.cpp dh_readline_cpp.cpp)
     add_library(dhutil_cli SHARED "${CLI_HEADERS}" "${CLI_SOURCES}")
-    target_link_libraries(dhutil_cli PUBLIC ${el_LIBRARIES} dhutil_base)
+    target_link_libraries(dhutil_cli PUBLIC ${el_LIBRARIES} ${GOBJECT_LIBRARIES})
+    target_include_directories(dhutil_cli PUBLIC ${GOBJECT_INCLUDE_DIRS})
 
     add_executable(example_cpp example.cpp)
-    target_link_libraries(example_cpp PUBLIC dhutil_cli)
+    target_link_libraries(example_cpp PUBLIC dhutil_cli dhutil_string)
 endif ()
 
 set(STRING_HEADERS dh_string_util.h)

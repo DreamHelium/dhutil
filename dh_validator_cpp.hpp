@@ -339,13 +339,13 @@ namespace dh
 
     class Arg
     {
-        private:
+    private:
         int arg_pos;
         using arg_fullname = std::vector<std::string>;
         std::vector<char> args;
         std::vector<arg_fullname> arg_fullnames;
         std::vector<std::string> arg_descriptions;
-        public:
+    public:
         std::vector<char> get_args()
         { return args; }
         std::vector<arg_fullname> get_arg_fullnames()
@@ -354,16 +354,18 @@ namespace dh
         {
             return args.size();
         }
-        void add_arg(char arg, arg_fullname fns, std::string description)
+
+        template<typename ...Args>
+        void add_arg(char arg, const std::string& description, Args ...args_names)
+        {
+            arg_fullname fullname = {args_names...};
+            add_arg(arg, fullname, description);
+        }
+        void add_arg(char arg, const arg_fullname& fns, const std::string& description)
         {
             args.push_back(arg);
             arg_fullnames.push_back(fns);
             arg_descriptions.push_back(description);
-        }
-        void add_arg(char arg, std::string fn, std::string description)
-        {
-            arg_fullname afn(1, fn);
-            add_arg(arg, afn, description);
         }
         std::string get_argument()
         {
@@ -459,7 +461,6 @@ namespace dh
 
     class GetOutput
     {
-        private:
         static DhReadlineFns fns;
         public:
         

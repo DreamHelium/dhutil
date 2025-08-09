@@ -87,7 +87,7 @@ dh_str_array_cat (DhStrArray *arr)
 }
 
 char *
-dh_str_array_cat_with_split (DhStrArray *arr, const char *const split)
+dh_str_array_cat_with_split (DhStrArray *arr, const char *split)
 {
     if (arr)
         {
@@ -258,13 +258,14 @@ dh_str_array_find (DhStrArray *arr, const char *str)
     return -1;
 }
 
-void dh_str_array_remove(DhStrArray** arr, const char *str)
+void
+dh_str_array_remove (DhStrArray **arr, const char *str)
 {
     int pos = dh_str_array_find (*arr, str);
     if (pos != -1)
         {
-            g_free((*arr)->val[pos]);
-            for (int i = pos + 1 ; i < (*arr)->num ; i++)
+            g_free ((*arr)->val[pos]);
+            for (int i = pos + 1; i < (*arr)->num; i++)
                 (*arr)->val[i - 1] = (*arr)->val[i];
             (*arr)->num--;
             if ((*arr)->num == 0)
@@ -310,7 +311,7 @@ dh_str_array_free (DhStrArray *arr)
 
 DhStrArray *
 dh_str_array_cat_str_array (DhStrArray *arr1, DhStrArray *arr2,
-                            const char *const split)
+                            const char *split)
 {
     if (arr1->num != arr2->num)
         return NULL;

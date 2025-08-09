@@ -141,7 +141,7 @@ extern "C"
     {
         dh::Arg* args = dynamic_cast<dh::Arg*>((dh::Arg*)arg);
         if(args)
-            args->add_arg(c, str, description);
+            args->add_arg(c, description, str);
     }
 
     void dh_arg_add_arg_multi(void* arg, char c, char* const* strv, const char* description)

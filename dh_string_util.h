@@ -19,8 +19,6 @@
 #define DH_STRING_UTIL_H
 
 #include <glib.h>
-#include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -32,12 +30,25 @@ extern "C"
     {
         char **val;
         int num;
+#ifdef __cplusplus
+        const char *
+        operator[] (int i) const
+        {
+            if (i < num)
+                return val[i];
+            return nullptr;
+        };
+        int
+        operator* ()
+        {
+            return num;
+        };
+#endif
     } DhStrArray;
 
     char *dh_strdup (const char *o_str);
     char *dh_str_array_cat (DhStrArray *arr); /* malloc'd */
-    char *dh_str_array_cat_with_split (DhStrArray *arr,
-                                       const char *const split);
+    char *dh_str_array_cat_with_split (DhStrArray *arr, const char *split);
     DhStrArray *dh_str_array_init (const char *str);
     int dh_str_array_add_str (DhStrArray **arr, const char *str);
     DhStrArray *dh_str_array_dup (DhStrArray *arr);
@@ -46,7 +57,7 @@ extern "C"
                                  const DhStrArray *arr2,
                                  gboolean ignore_order);
     int dh_str_array_find (DhStrArray *arr, const char *str);
-    void dh_str_array_remove(DhStrArray** arr, const char *str);
+    void dh_str_array_remove (DhStrArray **arr, const char *str);
     guint dh_str_array_find_char (DhStrArray *arr, char key);
     int *dh_str_array_find_include_chars (DhStrArray *arr, char *key,
                                           int *len);
@@ -54,7 +65,7 @@ extern "C"
     char **dh_str_array_dup_to_plain (DhStrArray *arr); /* malloc'd */
     void dh_str_array_free_plain (char **strv);
     DhStrArray *dh_str_array_cat_str_array (DhStrArray *arr1, DhStrArray *arr2,
-                                            const char *const split);
+                                            const char * split);
     gboolean dh_str_find_char (const char *str, char find_char);
 
     /** Use dh_getdelim */

@@ -34,7 +34,7 @@ test2 ()
             dh::Arg arg;
             std::vector<std::string> vstr = { "add", "添加" };
             arg.add_arg ('a', vstr, "添加字符串");
-            arg.add_arg ('v', "view", "查看字符串");
+            arg.add_arg ('v', "查看字符串", "view");
             std::cout << "[0] 添加字符串\n" << "[1] 查看字符串\n";
             char val = dh::GetOutput::get_output (&arg, "选择选项: ", true);
             if (val == 'a')

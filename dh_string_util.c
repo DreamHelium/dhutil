@@ -22,6 +22,12 @@
 
 #define dh_new(len, type) malloc ((len) * sizeof (type))
 
+typedef struct DhString
+{
+    char *string;
+    DhStrArray *args;
+} DhString;
+
 char *
 dh_strdup (const char *o_str)
 {
@@ -51,6 +57,28 @@ strcpy_p (char *buf, const char *str)
         ;
     return buf;
 #endif
+}
+
+static char *
+replace_str (const char *o_str, const char *char_set, const char *replace_str)
+{
+    char *str = g_strdup (o_str);
+    while (strstr (str, char_set))
+        {
+            /* get length and alloc */
+            char *new_str = g_new0 (char, strlen (str) + strlen (replace_str)
+                                              - strlen (char_set) + 1);
+            /* Copy before str */
+            strncpy (new_str, str, strstr (str, char_set) - str);
+            /* Copy replace str */
+            strcat (new_str, replace_str);
+            /* Get and copy after str */
+            char *old_str = strstr (str, char_set) + strlen (char_set);
+            strcat (new_str, old_str);
+            g_free (str);
+            str = new_str;
+        }
+    return str;
 }
 
 char *
@@ -124,6 +152,55 @@ dh_str_find_char (const char *str, char find_char)
             str++;
         }
     return FALSE;
+}
+
+DhString *
+dh_string_new_with_string (const char *str)
+{
+    DhString *ret = g_new0 (DhString, 1);
+    ret->string = g_strdup (str);
+    return ret;
+}
+
+void
+dh_string_free (DhString *str)
+{
+    g_free (str->string);
+    dh_str_array_free (str->args);
+    g_free (str);
+}
+
+void
+dh_string_replace_internal_string (DhString *string, const char *str)
+{
+    g_free (string->string);
+    string->string = g_strdup (str);
+}
+
+void
+dh_string_add_arg (DhString *string, const char *arg)
+{
+    dh_str_array_add_str (&string->args, arg);
+}
+
+void
+dh_string_replace_with_args (DhString *string)
+{
+    for (int i = 0; i < string->args->num; i++)
+        {
+            char *arg = string->args->val[i];
+            char *arg_str = g_strdup_printf ("%%%d", i + 1);
+            char *new_str = replace_str (string->string, arg_str, arg);
+            g_free (arg_str);
+            g_free (string->string);
+            string->string = new_str;
+        }
+}
+
+char *
+dh_string_get_string (DhString *string)
+{
+    return string->string;
 }
 
 static guint
@@ -265,7 +342,7 @@ dh_str_array_remove (DhStrArray **arr, const char *str)
     if (pos != -1)
         {
             g_free ((*arr)->val[pos]);
-            for (int i = pos + 1; i < (*arr)->num; i++)
+            for (int i = pos + 1; i < (*arr)->num + 1; i++)
                 (*arr)->val[i - 1] = (*arr)->val[i];
             (*arr)->num--;
             if ((*arr)->num == 0)

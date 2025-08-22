@@ -26,25 +26,8 @@ extern "C"
 {
 #endif
 
-    typedef struct DhStrArray
-    {
-        char **val;
-        int num;
-#ifdef __cplusplus
-        const char *
-        operator[] (int i) const
-        {
-            if (i < num)
-                return val[i];
-            return nullptr;
-        };
-        int
-        operator* ()
-        {
-            return num;
-        };
-#endif
-    } DhStrArray;
+    typedef struct DhStrArray DhStrArray;
+    typedef struct DhString DhString;
 
     char *dh_strdup (const char *o_str);
     char *dh_str_array_cat (DhStrArray *arr); /* malloc'd */
@@ -65,8 +48,16 @@ extern "C"
     char **dh_str_array_dup_to_plain (DhStrArray *arr); /* malloc'd */
     void dh_str_array_free_plain (char **strv);
     DhStrArray *dh_str_array_cat_str_array (DhStrArray *arr1, DhStrArray *arr2,
-                                            const char * split);
+                                            const char *split);
     gboolean dh_str_find_char (const char *str, char find_char);
+
+    DhString *dh_string_new_with_string (const char *str);
+    void dh_string_free (DhString *str);
+    void dh_string_replace_internal_string (DhString *string, const char *str);
+    void dh_string_add_arg (DhString *string, const char *arg);
+    void dh_string_replace_with_args (DhString *string);
+    /* Temp string until you free `DhString` */
+    char *dh_string_get_string (DhString *string);
 
     /** Use dh_getdelim */
     int dh_getline (char **input, size_t *n, FILE *stream);
@@ -77,6 +68,26 @@ extern "C"
     int dh_getprintlen (const char *str);
     int *dh_getprint_singlelen (const char *str, int *size);
     char *dh_getprint_str (const char *str, int printlen);
+
+    typedef struct DhStrArray
+    {
+        char **val;
+        int num;
+#ifdef __cplusplus
+        const char *
+        operator[] (int i) const
+        {
+            if (i < num)
+                return val[i];
+            return nullptr;
+        }
+        int
+        operator* () const
+        {
+            return num;
+        }
+#endif
+    } DhStrArray;
 
 #ifdef __cplusplus
 }

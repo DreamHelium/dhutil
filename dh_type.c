@@ -156,8 +156,12 @@ dh_info_new (int type, void *data, GDateTime *time, const gchar *description,
     Infos *infos = infos_arr->pdata[type];
     GHashTable *table = infos->infos;
     gchar *uuid = g_uuid_string_random ();
+    /* table of the infos should be locked */
+    g_rw_lock_writer_lock (&infos->infos_lock);
     g_hash_table_insert (table, uuid, info);
     dh_str_array_add_str (&infos->uuid_array, uuid);
+    g_rw_lock_writer_unlock (&infos->infos_lock);
+
     g_rw_lock_writer_unlock (&info->info_lock);
 
     update (infos);
@@ -170,8 +174,10 @@ dh_info_remove (int type, const gchar *uuid)
     Infos *infos = infos_arr->pdata[type];
     Info *info = g_hash_table_lookup (infos->infos, uuid_d);
     info_free (info, type);
+    g_rw_lock_writer_lock(&infos->infos_lock);
     dh_str_array_remove (&infos->uuid_array, uuid_d);
     g_hash_table_remove (infos->infos, uuid_d);
+    g_rw_lock_writer_unlock(&infos->infos_lock);
     g_free (uuid_d);
 
     update (infos);

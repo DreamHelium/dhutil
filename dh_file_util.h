@@ -20,9 +20,6 @@
 
 #include <gmodule.h>
 #include <gio/gio.h>
-#include <curl/curl.h>
-
-typedef int DhProgressCallback(void*, curl_off_t, curl_off_t, curl_off_t, curl_off_t);
 
 #ifdef __cplusplus
 extern "C"{
@@ -49,9 +46,6 @@ gboolean dh_file_copy_dir(const char* source, const char* dest, GFileCopyFlags f
 gboolean dh_file_copy_dir_full_arg(const char* source, const char* dest, GFileCopyFlags flags,
                                GCancellable* cancellable, GFileProgressCallback callback, 
                                gpointer data, GError** error);
-int      dh_file_download_file(const char* uri, const char* dir, gboolean rewrite_file);
-int      dh_file_download_full_arg(const char* uri, const char* dest, DhProgressCallback callback, gpointer data, gboolean rewrite_file);
-void     dh_file_download_async(const char* uri, const char* dest, DhProgressCallback progress_callback, gpointer data, gboolean rewrite_file, GAsyncReadyCallback finish_callback, gpointer callback_data);
 char*    dh_file_get_current_program_dir(const char* arg_zero);
 void     dh_file_rm_file(const char* pos);
 
